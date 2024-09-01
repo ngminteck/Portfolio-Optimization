@@ -1,0 +1,3 @@
+NVDA
+SGDUSD=X
+CL=F
