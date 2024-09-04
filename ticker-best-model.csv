@@ -1,0 +1,5 @@
+Ticker,Best_XGBClassifier_Score,Best_XGBClassifier_Path,Best_XGBRegressor_Score,Best_XGBRegressor_Path,Best_Cov1D_Score,Best_Cov1D_Path,Best_LSTM_Score,Best_LSTM_Path,Best_Cov1D-LSTM_Score,Best_Cov1D-LSTM_Path
+CL=F,0.7272727272727273,../models/xgboost/xbclassifier/CL=F_best_model.pkl,1.2384211499733446,../models/xgboost/xbclassifier/CL=F_best_model.pkl,,,,,,
+NVDA,0.6666666666666666,../models/xgboost/xbclassifier/NVDA_best_model.pkl,3.882965776152511,../models/xgboost/xbclassifier/NVDA_best_model.pkl,,,,,,
+SGDUSD=X,0.7142857142857143,../models/xgboost/xbclassifier/SGDUSD=X_best_model.pkl,0.0015891294385095805,../models/xgboost/xbclassifier/SGDUSD=X_best_model.pkl,,,,,,
+USDSGD=X,0.7142857142857143,../models/xgboost/xbclassifier/USDSGD=X_best_model.pkl,0.0028284929941148032,../models/xgboost/xbclassifier/USDSGD=X_best_model.pkl,,,,,,
