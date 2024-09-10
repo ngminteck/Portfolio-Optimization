@@ -1,5 +1,5 @@
 Ticker_Symbol,Best_Cov1D_Classification_Accuracy,Best_Cov1D_Classification_Path,Best_Cov1D_Regression_Path,Best_Cov1D_Regression_RMSE,Best_LSTM_Classification_Accuracy,Best_LSTM_Classification_Path,Best_LSTM_Regression_Path,Best_LSTM_Regression_RMSE,Best_Transformer_Classification_Accuracy,Best_Transformer_Classification_Path,Best_Transformer_Regression_Path,Best_Transformer_Regression_RMSE,Best_XGBClassifier_Classification_Accuracy,Best_XGBClassifier_Classification_Path,Best_XGBRegressor_Regression_Path,Best_XGBRegressor_Regression_RMSE
-CL=F,,,,,,,,,,,,,0.8309859154929577,../models/trained-models/xgboost/xbclassifier/CL=F.pkl,../models/trained-models/xgboost/xbregressor/CL=F.pkl,0.9239946966798452
-NVDA,,,,,,,,,,,,,0.7714285714285715,../models/trained-models/xgboost/xbclassifier/NVDA.pkl,../models/trained-models/xgboost/xbregressor/NVDA.pkl,1.6707068633106548
-SGDUSD=X,,,,,,,,,,,,,0.6486486486486487,../models/trained-models/xgboost/xbclassifier/SGDUSD=X.pkl,../models/trained-models/xgboost/xbregressor/SGDUSD=X.pkl,0.0015962230736208
-USDSGD=X,,,,,,,,,,,,,0.6621621621621622,../models/trained-models/xgboost/xbclassifier/USDSGD=X.pkl,../models/trained-models/xgboost/xbregressor/USDSGD=X.pkl,0.0028590474069686562
+CL=F,,,,,,,,,,,,,0.8125,../models/trained-models/xgboost/xbclassifier/CL=F.pkl,../models/trained-models/xgboost/xbregressor/CL=F.pkl,1.0183554439809628
+NVDA,,,,,,,,,,,,,0.72,../models/trained-models/xgboost/xbclassifier/NVDA.pkl,../models/trained-models/xgboost/xbregressor/NVDA.pkl,1.061623092676544
+SGDUSD=X,,,,,,,,,,,,,0.625,../models/trained-models/xgboost/xbclassifier/SGDUSD=X.pkl,../models/trained-models/xgboost/xbregressor/SGDUSD=X.pkl,0.0017285994355405
+USDSGD=X,,,,,,,,,,,,,0.6195652173913043,../models/trained-models/xgboost/xbclassifier/USDSGD=X.pkl,../models/trained-models/xgboost/xbregressor/USDSGD=X.pkl,0.0031091853610114555
