@@ -31,7 +31,7 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
         return np.array(sequences_X), np.array(sequences_y)
 
     def lstm_objective(trial):
-        sequence_length = trial.suggest_categorical('sequence_length', [5, 7, 14, 20, 30])
+        sequence_length = trial.suggest_int('sequence_length',2, 30)
 
         # Create sequences
         X_seq, y_seq = create_sequences(X, y, sequence_length)
@@ -51,7 +51,7 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
         num_layers = trial.suggest_int('num_layers', 1, 3)
         num_blocks = trial.suggest_int('num_blocks', 1, 5)
         dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
-        epochs = trial.suggest_int('epochs', 100, 1000)
+        epochs = 1000
 
         model = LSTMModel(input_size, hidden_size, num_blocks, num_layers, dropout_rate, classification=True).to(device)
         optimizer = optim.Adam(model.parameters(), lr=trial.suggest_float('lr', 1e-5, 1e-2))

@@ -39,7 +39,7 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol,
         num_blocks = trial.suggest_int('num_blocks', 1, 5)
         l2_lambda = trial.suggest_float('l2_lambda', 1e-5, 1e-2)
         dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
-        epochs = trial.suggest_int('epochs', 10, 100)
+        epochs = 1000
 
         model = Conv1DModel(in_channels, out_channels, kernel_size, num_blocks, l2_lambda, dropout_rate,
                             classification=False).to(device)
