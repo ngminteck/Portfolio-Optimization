@@ -1,1 +1,1 @@
-{"n_estimators": 142, "max_depth": 4, "learning_rate": 0.15918537430667692, "subsample": 0.7321023205636961, "colsample_bytree": 0.99281013214383, "gamma": 2.824315753213255, "lambda": 0.9549793906934014, "alpha": 3.336759492720955e-07}
+{"n_estimators": 459, "max_depth": 10, "learning_rate": 0.19831986832055612, "subsample": 0.6269725130478511, "colsample_bytree": 0.8407987521289668, "gamma": 2.4351299275762566, "lambda": 0.010360521531905672, "alpha": 1.9554881807337813e-06}
