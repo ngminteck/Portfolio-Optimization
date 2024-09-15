@@ -47,8 +47,7 @@ def set_target(df):
     return df
 
 
-def split_train_and_test_data_and_save(df, days, ticker_symbol):
-    cutoff_date = df.index.max() - timedelta(days=days)
+def split_train_and_test_data_and_save(df, cutoff_date, ticker_symbol):
     train_df = df[df.index < cutoff_date]
     test_df1 = train_df.tail(30).copy(deep=True)
     test_df2 = df[df.index >= cutoff_date]

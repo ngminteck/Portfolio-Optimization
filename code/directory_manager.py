@@ -1,37 +1,48 @@
 import os
+import glob
 import pandas as pd
 
+Ticker_Hyperparams_Model_Metrics_Csv = "../models/hyperparameters_search_models/ticker_hyperparams_model_metrics.csv"
+Ticker_Trained_Model_Metrics_Csv = "../models/trained_models/ticker_trained_model_metrics.csv"
 
+Hyperparameters_Search_Models_Folder = "../models/hyperparameters_search_models/"
+Trained_Models_Folder = "../models/trained_models/"
+Feature_Importance_Folder = "../feature_importance/"
 def make_all_directory():
-    os.makedirs('../models/hyperparameters-search-models/pytorch/conv1d-classification/', exist_ok=True)
-    os.makedirs('../models/hyperparameters-search-models/pytorch/conv1d-regression/', exist_ok=True)
-    os.makedirs('../models/hyperparameters-search-models/pytorch/lstm-classification/', exist_ok=True)
-    os.makedirs('../models/hyperparameters-search-models/pytorch/lstm-regression/', exist_ok=True)
-    os.makedirs('../models/hyperparameters-search-models/pytorch/transformer-classification/', exist_ok=True)
-    os.makedirs('../models/hyperparameters-search-models/pytorch/transformer-regression/', exist_ok=True)
-    os.makedirs('../models/hyperparameters-search-models/xgboost/xbclassifier', exist_ok=True)
-    os.makedirs('../models/hyperparameters-search-models/xgboost/xbregressor', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_classification/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_regression/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/lstm_classification/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/lstm_regression/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/transformer_classification/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/transformer_regression/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/randomforest_classifier', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/randomforest_regressor', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xbclassifier', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xbregressor', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_classification/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_regression/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_transformer_classification/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_transformer_regression/', exist_ok=True)
 
-    os.makedirs('../models/best-hyperparameters/pytorch/conv1d-classification/', exist_ok=True)
-    os.makedirs('../models/best-hyperparameters/pytorch/conv1d-regression/', exist_ok=True)
-    os.makedirs('../models/best-hyperparameters/pytorch/lstm-classification/', exist_ok=True)
-    os.makedirs('../models/best-hyperparameters/pytorch/lstm-regression/', exist_ok=True)
-    os.makedirs('../models/best-hyperparameters/pytorch/transformer-classification/', exist_ok=True)
-    os.makedirs('../models/best-hyperparameters/pytorch/transformer-regression/', exist_ok=True)
-    os.makedirs('../models/best-hyperparameters/xgboost/xbclassifier', exist_ok=True)
-    os.makedirs('../models/best-hyperparameters/xgboost/xbregressor', exist_ok=True)
+    os.makedirs('../models/trained_models/conv1d_classification/', exist_ok=True)
+    os.makedirs('../models/trained_models/conv1d_regression/', exist_ok=True)
+    os.makedirs('../models/trained_models/lstm_classification/', exist_ok=True)
+    os.makedirs('../models/trained_models/lstm_regression/', exist_ok=True)
+    os.makedirs('../models/trained_models/transformer_classification/', exist_ok=True)
+    os.makedirs('../models/trained_models/transformer_regression/', exist_ok=True)
+    os.makedirs('../models/trained_models/randomforest_classifier', exist_ok=True)
+    os.makedirs('../models/trained_models/randomforest_regressor', exist_ok=True)
+    os.makedirs('../models/trained_models/xbclassifier', exist_ok=True)
+    os.makedirs('../models/trained_models/xbregressor', exist_ok=True)
+    os.makedirs('../models/trained_models/conv1d_lstm_classification/', exist_ok=True)
+    os.makedirs('../models/trained_models/conv1d_lstm_regression/', exist_ok=True)
+    os.makedirs('../models/trained_models/conv1d_transformer_classification/', exist_ok=True)
+    os.makedirs('../models/trained_models/conv1d_transformer_regression/', exist_ok=True)
 
-    os.makedirs('../models/trained-models/pytorch/conv1d-classification/', exist_ok=True)
-    os.makedirs('../models/trained-models/pytorch/conv1d-regression/', exist_ok=True)
-    os.makedirs('../models/trained-models/pytorch/lstm-classification/', exist_ok=True)
-    os.makedirs('../models/trained-models/pytorch/lstm-regression/', exist_ok=True)
-    os.makedirs('../models/trained-models/pytorch/transformer-classification/', exist_ok=True)
-    os.makedirs('../models/trained-models/pytorch/transformer-regression/', exist_ok=True)
-    os.makedirs('../models/trained-models/xgboost/xbclassifier', exist_ok=True)
-    os.makedirs('../models/trained-models/xgboost/xbregressor', exist_ok=True)
-
-    os.makedirs('../feature-importances/xbclassifier', exist_ok=True)
-    os.makedirs('../feature-importances/xbregressor', exist_ok=True)
+    os.makedirs('../feature_importance/randomforest_classifier', exist_ok=True)
+    os.makedirs('../feature_importance/randomforest_regressor', exist_ok=True)
+    os.makedirs('../feature_importance/xbclassifier', exist_ok=True)
+    os.makedirs('../feature_importance/xbregressor', exist_ok=True)
 
     os.makedirs('../data/train', exist_ok=True)
     os.makedirs('../data/test', exist_ok=True)
@@ -53,22 +64,92 @@ def load_or_create_ticker_df(csv_file_path):
     # Define the column types
     column_types = {
         "Ticker_Symbol": str,
-        "Best_Cov1D_Classification_Accuracy": float,
-        "Best_Cov1D_Classification_Path": str,
-        "Best_Cov1D_Regression_RMSE": float,
-        "Best_Cov1D_Regression_Path": str,
-        "Best_LSTM_Classification_Accuracy": float,
-        "Best_LSTM_Classification_Path": str,
-        "Best_LSTM_Regression_RMSE": float,
-        "Best_LSTM_Regression_Path": str,
-        "Best_Transformer_Classification_Accuracy": float,
-        "Best_Transformer_Classification_Path": str,
-        "Best_Transformer_Regression_RMSE": float,
-        "Best_Transformer_Regression_Path": str,
-        "Best_XGBClassifier_Classification_Accuracy": float,
-        "Best_XGBClassifier_Classification_Path": str,
-        "Best_XGBRegressor_Regression_RMSE": float,
-        "Best_XGBRegressor_Regression_Path": str
+
+        "conv1d_classification_1": float,
+        "conv1d_classification_2": float,
+        "conv1d_classification_3": float,
+        "conv1d_classification_4": float,
+        "conv1d_classification_5": float,
+
+        "conv1d_regression_1": float,
+        "conv1d_regression_2": float,
+        "conv1d_regression_3": float,
+        "conv1d_regression_4": float,
+        "conv1d_regression_5": float,
+
+        "lstm_classification_1": float,
+        "lstm_classification_2": float,
+        "lstm_classification_3": float,
+        "lstm_classification_4": float,
+        "lstm_classification_5": float,
+
+        "lstm_regression_1": float,
+        "lstm_regression_2": float,
+        "lstm_regression_3": float,
+        "lstm_regression_4": float,
+        "lstm_regression_5": float,
+
+        "transformer_classification_1": float,
+        "transformer_classification_2": float,
+        "transformer_classification_3": float,
+        "transformer_classification_4": float,
+        "transformer_classification_5": float,
+
+        "transformer_regression_1": float,
+        "transformer_regression_2": float,
+        "transformer_regression_3": float,
+        "transformer_regression_4": float,
+        "transformer_regression_5": float,
+
+        "randomforest_classifier_1": float,
+        "randomforest_classifier_2": float,
+        "randomforest_classifier_3": float,
+        "randomforest_classifier_4": float,
+        "randomforest_classifier_5": float,
+
+        "randomforest_regressor_1": float,
+        "randomforest_regressor_2": float,
+        "randomforest_regressor_3": float,
+        "randomforest_regressor_4": float,
+        "randomforest_regressor_5": float,
+
+        "xbclassifier_1": float,
+        "xbclassifier_2": float,
+        "xbclassifier_3": float,
+        "xbclassifier_4": float,
+        "xbclassifier_5": float,
+
+        "xbregressor_1": float,
+        "xbregressor_2": float,
+        "xbregressor_3": float,
+        "xbregressor_4": float,
+        "xbregressor_5": float,
+
+        "conv1d_lstm_classification_1": float,
+        "conv1d_lstm_classification_2": float,
+        "conv1d_lstm_classification_3": float,
+        "conv1d_lstm_classification_4": float,
+        "conv1d_lstm_classification_5": float,
+
+        "conv1d_lstm_regression_1": float,
+        "conv1d_lstm_regression_2": float,
+        "conv1d_lstm_regression_3": float,
+        "conv1d_lstm_regression_4": float,
+        "conv1d_lstm_regression_5": float,
+
+        "conv1d_transformer_classification_1": float,
+        "conv1d_transformer_classification_2": float,
+        "conv1d_transformer_classification_3": float,
+        "conv1d_transformer_classification_4": float,
+        "conv1d_transformer_classification_5": float,
+
+        "conv1d_transformer_regression_1": float,
+        "conv1d_transformer_regression_2": float,
+        "conv1d_transformer_regression_3": float,
+        "conv1d_transformer_regression_4": float,
+        "conv1d_transformer_regression_5": float,
+
+
     }
 
     if os.path.isfile(csv_file_path):
@@ -88,102 +169,32 @@ def load_or_create_ticker_df(csv_file_path):
 
 
 def delete_hyperparameter_search_model(ticker_symbol, model_type):
-    csv_path = '../models/hyperparameters-search-models/ticker-all-models-best-hyperparameters-list.csv'
 
-    conv1d_classification_model_path = f'../models/hyperparameters-search-models/pytorch/{model_type}/{ticker_symbol}.pth'
-    conv1d_regression_model_path = f'../models/hyperparameters-search-models/pytorch/{model_type}/{ticker_symbol}.pth'
-    lstm_classification_model_path = f'../models/hyperparameters-search-models/pytorch/{model_type}/{ticker_symbol}.pth'
-    lstm_regression_model_path = f'../models/hyperparameters-search-models/pytorch/{model_type}/{ticker_symbol}.pth'
-    xbclassifier_model_path = f'../models/hyperparameters-search-models/xgboost/{model_type}/{ticker_symbol}.pkl'
-    xbregressor_model_path = f'../models/hyperparameters-search-models/xgboost/{model_type}/{ticker_symbol}.pkl'
+    model_path_folder = Hyperparameters_Search_Models_Folder + model_type + '/'
 
-    conv1d_classification_params_path = f'../models/best-hyperparameters/pytorch/{model_type}/{ticker_symbol}.json'
-    conv1d_regression_params_path = f'../models/best-hyperparameters/pytorch/{model_type}/{ticker_symbol}.json'
-    lstm_classification_params_path = f'../models/best-hyperparameters/pytorch/{model_type}/{ticker_symbol}.json'
-    lstm_regression_params_path = f'../models/best-hyperparameters/pytorch/{model_type}/{ticker_symbol}.json'
-    xbclassifier_params_path = f'../models/best-hyperparameters/xgboost/{model_type}/{ticker_symbol}.json'
-    xbregressor_params_path = f'../models/best-hyperparameters/xgboost/{model_type}/{ticker_symbol}.json'
+    # Delete model files
+    for i in range(1, 6):
+        pattern = f"{model_path_folder}{ticker_symbol}_{i}.*"
+        for filename in glob.glob(pattern):
+            try:
+                os.remove(filename)
+                print(f"Deleted: {filename}")
+            except OSError as e:
+                print(f"Error: {filename} : {e.strerror}")
 
-    if model_type == "conv1d-classification":
-        if os.path.isfile(conv1d_classification_model_path):
-            os.remove(conv1d_classification_model_path)
-            print(f"Deleted {conv1d_classification_model_path}")
-        if os.path.isfile(conv1d_classification_params_path):
-            os.remove(conv1d_classification_params_path)
-            print(f"Deleted {conv1d_classification_params_path}")
-
-    if model_type == "conv1d-regression":
-        if os.path.isfile(conv1d_regression_model_path):
-            os.remove(conv1d_regression_model_path)
-            print(f"Deleted {conv1d_regression_model_path}")
-        if os.path.isfile(conv1d_regression_params_path):
-            os.remove(conv1d_regression_params_path)
-            print(f"Deleted {conv1d_regression_params_path}")
-
-    if model_type == "lstm-classification":
-        if os.path.isfile(lstm_classification_model_path):
-            os.remove(lstm_classification_model_path)
-            print(f"Deleted {lstm_classification_model_path}")
-        if os.path.isfile(lstm_classification_params_path):
-            os.remove(lstm_classification_params_path)
-            print(f"Deleted {lstm_classification_params_path}")
-
-    if model_type == "lstm-regression":
-        if os.path.isfile(lstm_regression_model_path):
-            os.remove(lstm_regression_model_path)
-            print(f"Deleted {lstm_regression_model_path}")
-        if os.path.isfile(lstm_regression_params_path):
-            os.remove(lstm_regression_params_path)
-            print(f"Deleted {lstm_regression_params_path}")
-
-    if model_type == "xbclassifier":
-        if os.path.isfile(xbclassifier_model_path):
-            os.remove(xbclassifier_model_path)
-            print(f"Deleted {xbclassifier_model_path}")
-        if os.path.isfile(xbclassifier_params_path):
-            os.remove(xbclassifier_params_path)
-            print(f"Deleted {xbclassifier_params_path}")
-
-    if model_type == "xbregressor":
-        if os.path.isfile(xbregressor_model_path):
-            os.remove(xbregressor_model_path)
-            print(f"Deleted {xbregressor_model_path}")
-        if os.path.isfile(xbregressor_params_path):
-            os.remove(xbregressor_params_path)
-            print(f"Deleted {xbregressor_params_path}")
-
-    if os.path.isfile(csv_path):
-        ticker_df = pd.read_csv(csv_path)
-        if ticker_symbol in ticker_df['Ticker_Symbol'].values:
-            if model_type == "conv1d-classification":
-                ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, ['Best_Cov1D_Classification_Accuracy',
-                                                                            'Best_Cov1D_Classification_Path']] = [pd.NA,
-                                                                                                                  pd.NA]
-            if model_type == "conv1d-regression":
-                ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, ['Best_Cov1D_Regression_RMSE',
-                                                                            'Best_Cov1D_Regression_Path']] = [pd.NA,
-                                                                                                              pd.NA]
-            if model_type == "lstm-classification":
-                ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, ['Best_LSTM_Classification_Accuracy',
-                                                                            'Best_LSTM_Classification_Path']] = [pd.NA,
-                                                                                                                 pd.NA]
-            if model_type == "lstm-regression":
-                ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, ['Best_LSTM_Regression_RMSE',
-                                                                            'Best_LSTM_Regression_Path']] = [pd.NA,
-                                                                                                             pd.NA]
-            if model_type == "xbclassifier":
-                ticker_df.loc[
-                    ticker_df['Ticker_Symbol'] == ticker_symbol, ['Best_XGBClassifier_Classification_Accuracy',
-                                                                  'Best_XGBClassifier_Classification_Path']] = [pd.NA,
-                                                                                                                pd.NA]
-            if model_type == "xbregressor":
-                ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, ['Best_XGBRegressor_Regression_RMSE',
-                                                                            'Best_XGBRegressor_Regression_Path']] = [
-                    pd.NA, pd.NA]
-
-            ticker_df.to_csv(csv_path, index=False)
-            print(f"Deleted {ticker_symbol} from {csv_path}")
-        else:
-            print(f"{ticker_symbol} not found in {csv_path}")
+    # Update CSV file
+    if os.path.isfile(Ticker_Hyperparams_Model_Metrics_Csv):
+        try:
+            ticker_df = pd.read_csv(Ticker_Hyperparams_Model_Metrics_Csv)
+            if ticker_symbol in ticker_df['Ticker_Symbol'].values:
+                ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol,
+                [f'{model_type}_1', f'{model_type}_2', f'{model_type}_3', f'{model_type}_4', f'{model_type}_5']] \
+                    = [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA]
+                ticker_df.to_csv(Ticker_Hyperparams_Model_Metrics_Csv, index=False)
+                print(f"Deleted {ticker_symbol} from {Ticker_Hyperparams_Model_Metrics_Csv}")
+            else:
+                print(f"{ticker_symbol} not found in {Ticker_Hyperparams_Model_Metrics_Csv}")
+        except Exception as e:
+            print(f"Error processing CSV file: {e}")
     else:
-        print(f"{csv_path} does not exist")
+        print(f"{Ticker_Hyperparams_Model_Metrics_Csv} does not exist")

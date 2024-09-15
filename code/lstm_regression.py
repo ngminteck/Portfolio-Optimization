@@ -8,123 +8,134 @@ from sklearn.metrics import root_mean_squared_error
 from directory_manager import *
 from lstm import *
 
-def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol, delete_old_data = False):
-    if delete_old_data:
-        delete_hyperparameter_search_model(ticker_symbol, "lstm--regression")
+Model_Type = "lstm_regression"
 
-    model_path = f'../models/hyperparameters-search-models/pytorch/lstm-regression/{ticker_symbol}.pth'
-    csv_path = f'../models/hyperparameters-search-models/ticker-all-models-best-hyperparameters-list.csv'
-    params_path = f'../models/best-hyperparameters/pytorch/lstm-regression/{ticker_symbol}.json'
-
-    device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
-
-    # Convert DataFrame to numpy array
+def lstm_regression_objective(X, y, gpu_available, trial):
     X = X.to_numpy()
     y = y.to_numpy().reshape(-1, 1)
 
-    def create_sequences(X, y, sequence_length):
-        sequences_X, sequences_y = [], []
-        for i in range(len(X) - sequence_length + 1):
-            sequences_X.append(X[i:i + sequence_length])
-            sequences_y.append(y[i + sequence_length - 1])
-        return np.array(sequences_X), np.array(sequences_y)
+    sequence_length = trial.suggest_int('sequence_length', 2, 30)
 
-    def lstm_objective(trial):
-        sequence_length = trial.suggest_int('sequence_length',2, 30)
+    # Create sequences
+    X_seq, y_seq = create_sequences(X, y, sequence_length)
 
-        # Create sequences
-        X_seq, y_seq = create_sequences(X, y, sequence_length)
+    # Split data into training, validation, and test sets
+    TEST_SIZE = 0.2
+    VAL_SIZE = 0.1
+    RANDOM_STATE = 42
 
-        # Split data into training, validation, and test sets
-        TEST_SIZE = 0.2
-        VAL_SIZE = 0.1
-        RANDOM_STATE = 42
+    X_train, X_temp, y_train, y_temp = train_test_split(X_seq, y_seq, test_size=TEST_SIZE + VAL_SIZE,
+                                                        random_state=RANDOM_STATE)
+    X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=TEST_SIZE / (TEST_SIZE + VAL_SIZE),
+                                                    random_state=RANDOM_STATE)
 
-        X_train, X_temp, y_train, y_temp = train_test_split(X_seq, y_seq, test_size=TEST_SIZE + VAL_SIZE, random_state=RANDOM_STATE)
-        X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=TEST_SIZE / (TEST_SIZE + VAL_SIZE), random_state=RANDOM_STATE)
+    device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
 
-        input_size = X_train.shape[2]  # Number of features
-        hidden_size = trial.suggest_int('hidden_size', 16, 128)
-        num_layers = trial.suggest_int('num_layers', 1, 3)
-        num_blocks = trial.suggest_int('num_blocks', 1, 5)
-        dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
-        epochs = 500
+    input_size = X_train.shape[2]  # Number of features
+    hidden_size = trial.suggest_int('hidden_size', 16, 128)
+    num_layers = trial.suggest_int('num_layers', 1, 3)
+    num_blocks = trial.suggest_int('num_blocks', 1, 5)
+    dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
+    epochs = 500
 
-        model = LSTMModel(input_size, hidden_size, num_blocks, num_layers, dropout_rate, classification=False).to \
-            (device)
-        optimizer = optim.Adam(model.parameters(), lr=trial.suggest_float('lr', 1e-5, 1e-2))
-        criterion = nn.MSELoss()
+    model = LSTMModel(input_size, hidden_size, num_blocks, num_layers, dropout_rate, classification=False).to \
+        (device)
+    optimizer = optim.Adam(model.parameters(), lr=trial.suggest_float('lr', 1e-5, 1e-2))
+    criterion = nn.MSELoss()
 
-        patience = 10
-        best_val_rmse = np.inf
-        epochs_no_improve = 0
+    patience = 10
+    best_val_rmse = np.inf
+    epochs_no_improve = 0
 
-        input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-        target_train = torch.tensor(y_train, dtype=torch.float32).to(device)
+    input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
+    target_train = torch.tensor(y_train, dtype=torch.float32).to(device)
 
-        input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-        target_val = torch.tensor(y_val, dtype=torch.float32).to(device)
+    input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
+    target_val = torch.tensor(y_val, dtype=torch.float32).to(device)
 
-        for epoch in range(epochs):
-            model.train()
-            optimizer.zero_grad()
-            output = model(input_train)
-            loss = criterion(output, target_train)
-            loss.backward()
-            optimizer.step()
+    for epoch in range(epochs):
+        model.train()
+        optimizer.zero_grad()
+        output = model(input_train)
+        loss = criterion(output, target_train)
+        loss.backward()
+        optimizer.step()
 
-            model.eval()
-            with torch.no_grad():
-                val_output = model(input_val)
-                val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
+        model.eval()
+        with torch.no_grad():
+            val_output = model(input_val)
+            val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
 
-                if val_rmse < best_val_rmse:
-                    best_val_rmse = val_rmse
-                    epochs_no_improve = 0
-                else:
-                    epochs_no_improve += 1
+            if val_rmse < best_val_rmse:
+                best_val_rmse = val_rmse
+                epochs_no_improve = 0
+            else:
+                epochs_no_improve += 1
 
-                if epochs_no_improve >= patience:
-                    print(f"Early stopping at epoch {epoch}")
-                    break
+            if epochs_no_improve >= patience:
+                print(f"Early stopping at epoch {epoch}")
+                break
 
-        return best_val_rmse
+    return best_val_rmse
+def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol, delete_old_data = False):
+    if delete_old_data:
+        delete_hyperparameter_search_model(ticker_symbol, Model_Type)
 
     study = optuna.create_study(direction='minimize')
-    study.optimize(lstm_objective, n_trials=100)
+    study.optimize(lstm_regression_objective, X, y, gpu_available, n_trials=100)
 
-    # Reshape X to match the best sequence length
-    best_sequence_length = study.best_params['sequence_length']
-    X_seq, y_seq = create_sequences(X, y, best_sequence_length)
+    top_trials = study.trials_dataframe().sort_values(by='value', ascending=True).head(5)
 
-    best_model = LSTMModel(X_seq.shape[2], study.best_params['hidden_size'], study.best_params['num_blocks'], study.best_params['num_layers'], study.best_params['dropout_rate'], classification=False).to \
-        (device)
+    metrics = {}
 
-    ticker_df = load_or_create_ticker_df(csv_path)
+    for i, trial in top_trials.iterrows():
+        metrics[f'new_{i}'] = trial['value']
 
-    # Update ticker_df and save the best model
-    metric_col = 'Best_LSTM_Regression_RMSE'
-    path_col = 'Best_LSTM_Regression_Path'
+    ticker_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
+    # Check if the ticker_symbol exists
+    if ticker_symbol not in ticker_df['Ticker_Symbol'].values:
+        # Create a new DataFrame for the new row
+        new_row = pd.DataFrame({'Ticker_Symbol': [ticker_symbol]})
+        # Concatenate the new row to the existing DataFrame
+        ticker_df = pd.concat([ticker_df, new_row], ignore_index=True)
 
     if ticker_symbol in ticker_df['Ticker_Symbol'].values:
-        current_score = ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, metric_col].values[0]
-        if pd.isnull(current_score) or study.best_value < current_score:
-            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, [metric_col, path_col]] = [study.best_value, model_path]
-            torch.save(best_model.state_dict(), model_path)
-            with open(params_path, 'w') as f:
-                json.dump(study.best_params, f)
-            print(f"parameters for {ticker_symbol} saved to {params_path}")
-            ticker_df.to_csv(csv_path, index=False)
-            print(f"Best model for {ticker_symbol} saved with RMSE: {study.best_value}")
+        for i in range(1, 6):
+            column_name = f"{Model_Type}_{i}"
+            current_score = ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name].values[0]
+            if not pd.isnull(current_score):
+                metrics[f'old_{i}'] = current_score
+
+    sorted_metrics = {k: v for k, v in sorted(metrics.items(), key=lambda item: item[1], reverse=False)}
+
+    sorted_items = list(sorted_metrics.items())
+
+    for rank, (key, value) in enumerate(sorted_items[:5], start=1):
+        new_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{rank}.pth'
+        new_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{rank}.json'
+
+        if key.startswith('old'):
+            # Extract the index from the key using split method
+            old_index = key.split('_')[1]
+            old_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pth'
+            old_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
+
+            os.rename(old_model_path, new_model_path)
+            os.rename(old_params_path, new_params_path)
+
         else:
-            print(f"Previous model RMSE: {current_score} is better for {ticker_symbol} than RMSE: {study.best_value}")
-    else:
-        new_row = pd.DataFrame \
-            ({'Ticker_Symbol': [ticker_symbol], metric_col: [study.best_value], path_col: [model_path]})
-        ticker_df = pd.concat([ticker_df, new_row], ignore_index=True)
-        torch.save(best_model.state_dict(), model_path)
-        with open(params_path, 'w') as f:
-            json.dump(study.best_params, f)
-        print(f"parameters for {ticker_symbol} saved to {params_path}")
-        ticker_df.to_csv(csv_path, index=False)
-        print(f"Best model for {ticker_symbol} saved with RMSE: {study.best_value}")
+            # Extract the trial index from the key using split method
+            trial_index = int(key.split('_')[1])
+            trial = top_trials.iloc[trial_index]
+
+            # Save the new model from trial
+            torch.save(trial.user_attrs['model'].state_dict(), new_model_path)
+            with open(new_params_path, 'w') as f:
+                json.dump(trial.params, f)
+
+        # Update ticker_df with the new metrics
+        column_name = f"{Model_Type}_{rank}"
+        ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = value
+
+    # Save the updated ticker_df back to the CSV
+    ticker_df.to_csv(Ticker_Hyperparams_Model_Metrics_Csv, index=False)

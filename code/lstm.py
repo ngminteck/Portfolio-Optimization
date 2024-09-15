@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 
 
 class LSTMResidualBlock(nn.Module):
@@ -42,3 +43,10 @@ class LSTMModel(nn.Module):
         if self.classification:
             out = F.log_softmax(out, dim=1)
         return out
+
+def create_sequences(X, y, sequence_length):
+    sequences_X, sequences_y = [], []
+    for i in range(len(X) - sequence_length + 1):
+        sequences_X.append(X[i:i + sequence_length])
+        sequences_y.append(y[i + sequence_length - 1])
+    return np.array(sequences_X), np.array(sequences_y)
