@@ -154,7 +154,7 @@ def xbclassifier_resume_training(X, y, gpu_available, ticker_symbol, hyperparame
         hyperparameters_search_model_df.loc[
             hyperparameters_search_model_df['Ticker_Symbol'] == ticker_symbol, column].values[0]
 
-    trained_model_df.to_csv(Ticker_Hyperparams_Model_Metrics_Csv, index=False)
+    trained_model_df.to_csv(Ticker_Trained_Model_Metrics_Csv, index=False)
 
 
 def xbclassifier_predict(X, ticker_symbol , no = 1):
