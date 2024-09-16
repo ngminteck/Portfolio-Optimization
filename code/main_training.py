@@ -13,6 +13,8 @@ from xgbrfregressor import *
 from xgbclassifier_gbtree import *
 from xgbregressor_gbtree import *
 
+from cov1d_lstm_regression import *
+
 def main_training():
     logical_cores = os.cpu_count()
     print(f"Number of logical CPU cores: {logical_cores}")
@@ -59,8 +61,10 @@ def main_training():
         xgbrfclassifier_resume_training(X, y_classifier, gpu_available, ticker_symbol)
         xgbrfregressor_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
-        xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol, True)
-        xgbregressor_gbtree_resume_training(X, y_regressor, gpu_available, ticker_symbol, True)
+        xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+        xgbregressor_gbtree_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+
+        conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
         break
 

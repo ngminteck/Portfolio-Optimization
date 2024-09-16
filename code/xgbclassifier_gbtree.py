@@ -126,7 +126,7 @@ def xgbclassifier_gbtree_resume_training(X, y, gpu_available, ticker_symbol, hyp
             all_existed = False
             break
 
-    if all_existed or hyperparameter_search:
+    if not all_existed or hyperparameter_search:
         xgbclassifier_gbtree_hyperparameters_search(X, y, gpu_available, ticker_symbol)
 
     for i in range(1, 6):
