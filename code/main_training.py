@@ -1,12 +1,17 @@
 import xgboost
 
 from training_preprocessing import *
-from xbclassifier import *
-from xbregressor import *
+
 from cov1d_classification import *
 from cov1d_regression import *
 from lstm_classification import *
 from lstm_regression import *
+
+from xgbrfclassifier import *
+from xgbrfregressor import *
+
+from xgbclassifier_gbtree import *
+from xgbregressor_gbtree import *
 
 def main_training():
     logical_cores = os.cpu_count()
@@ -45,14 +50,19 @@ def main_training():
         # If you want to start hyperparameter search from the beginning and delete old records (mostly needed if features and target have been changed):
         # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, True, True)
 
-        xbclassifier_resume_training(X, y_classifier, gpu_available, ticker_symbol)
-        xbregressor_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-
         conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
         conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
         lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
         lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+
+        xgbrfclassifier_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+        xgbrfregressor_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+
+        xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol, True)
+        xgbregressor_gbtree_resume_training(X, y_regressor, gpu_available, ticker_symbol, True)
+
+        break
 
 
 

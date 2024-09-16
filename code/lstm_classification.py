@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score
 import shutil
 
 from directory_manager import *
+from optuna_config import *
 from lstm import *
 
 Model_Type = "lstm_classification"
@@ -77,7 +78,7 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
         return best_val_accuracy
 
     study = optuna.create_study(direction='maximize')
-    study.optimize(lstm_classification_objective, n_trials=100)
+    study.optimize(lstm_classification_objective, n_trials=MAX_TRIALS)
 
     # Get all trials
     all_trials = study.trials
@@ -119,8 +120,8 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
             old_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pth'
             old_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
 
-            os.rename(old_model_path, new_model_path)
-            os.rename(old_params_path, new_params_path)
+            rename_and_overwrite(old_model_path, new_model_path)
+            rename_and_overwrite(old_params_path, new_params_path)
 
         else:
             trial_index = int(key.split('_')[1])

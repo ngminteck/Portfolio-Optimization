@@ -15,10 +15,14 @@ def make_all_directory():
     os.makedirs('../models/hyperparameters_search_models/lstm_regression/', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/transformer_classification/', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/transformer_regression/', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/randomforest_classifier', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/randomforest_regressor', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xbclassifier', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xbregressor', exist_ok=True)
+
+    os.makedirs('../models/hyperparameters_search_models/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xgbclassifier_dart', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xgbregressor_dart', exist_ok=True)
+
     os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_classification/', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_regression/', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/conv1d_transformer_classification/', exist_ok=True)
@@ -30,25 +34,35 @@ def make_all_directory():
     os.makedirs('../models/trained_models/lstm_regression/', exist_ok=True)
     os.makedirs('../models/trained_models/transformer_classification/', exist_ok=True)
     os.makedirs('../models/trained_models/transformer_regression/', exist_ok=True)
-    os.makedirs('../models/trained_models/randomforest_classifier', exist_ok=True)
-    os.makedirs('../models/trained_models/randomforest_regressor', exist_ok=True)
-    os.makedirs('../models/trained_models/xbclassifier', exist_ok=True)
-    os.makedirs('../models/trained_models/xbregressor', exist_ok=True)
+
+    os.makedirs('../models/trained_models/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models/trained_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/trained_models/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models/trained_models/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/trained_models/xgbclassifier_dart', exist_ok=True)
+    os.makedirs('../models/trained_models/xgbregressor_dart', exist_ok=True)
+
     os.makedirs('../models/trained_models/conv1d_lstm_classification/', exist_ok=True)
     os.makedirs('../models/trained_models/conv1d_lstm_regression/', exist_ok=True)
     os.makedirs('../models/trained_models/conv1d_transformer_classification/', exist_ok=True)
     os.makedirs('../models/trained_models/conv1d_transformer_regression/', exist_ok=True)
 
-    os.makedirs('../feature_importance/randomforest_classifier', exist_ok=True)
-    os.makedirs('../feature_importance/randomforest_regressor', exist_ok=True)
-    os.makedirs('../feature_importance/xbclassifier', exist_ok=True)
-    os.makedirs('../feature_importance/xbregressor', exist_ok=True)
+    os.makedirs('../feature_importance/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../feature_importance/xgbrfregressor', exist_ok=True)
+    os.makedirs('../feature_importance/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../feature_importance/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../feature_importance/xgbclassifier_dart', exist_ok=True)
+    os.makedirs('../feature_importance/xgbregressor_dart', exist_ok=True)
 
     os.makedirs('../data/all', exist_ok=True)
     os.makedirs('../data/train', exist_ok=True)
     os.makedirs('../data/test', exist_ok=True)
 
-
+def rename_and_overwrite(old_path, new_path):
+    # Check if the new model path already exists
+    if os.path.exists(new_path):
+        os.remove(new_path)  # Remove the existing file
+    os.rename(old_path, new_path)  # Rename the old file to the new path
 def load_or_create_ticker_df(csv_file_path):
     # Define the column types
     column_types = {
@@ -90,29 +104,41 @@ def load_or_create_ticker_df(csv_file_path):
         "transformer_regression_4": float,
         "transformer_regression_5": float,
 
-        "randomforest_classifier_1": float,
-        "randomforest_classifier_2": float,
-        "randomforest_classifier_3": float,
-        "randomforest_classifier_4": float,
-        "randomforest_classifier_5": float,
+        "xgbrfclassifier_1": float,
+        "xgbrfclassifier_2": float,
+        "xgbrfclassifier_3": float,
+        "xgbrfclassifier_4": float,
+        "xgbrfclassifier_5": float,
 
-        "randomforest_regressor_1": float,
-        "randomforest_regressor_2": float,
-        "randomforest_regressor_3": float,
-        "randomforest_regressor_4": float,
-        "randomforest_regressor_5": float,
+        "xgbrfregressor_1": float,
+        "xgbrfregressor_2": float,
+        "xgbrfregressor_3": float,
+        "xgbrfregressor_4": float,
+        "xgbrfregressor_5": float,
 
-        "xbclassifier_1": float,
-        "xbclassifier_2": float,
-        "xbclassifier_3": float,
-        "xbclassifier_4": float,
-        "xbclassifier_5": float,
+        "xgbclassifier_gbtree_1": float,
+        "xgbclassifier_gbtree_2": float,
+        "xgbclassifier_gbtree_3": float,
+        "xgbclassifier_gbtree_4": float,
+        "xgbclassifier_gbtree_5": float,
 
-        "xbregressor_1": float,
-        "xbregressor_2": float,
-        "xbregressor_3": float,
-        "xbregressor_4": float,
-        "xbregressor_5": float,
+        "xgbregressor_gbtree_1": float,
+        "xgbregressor_gbtree_2": float,
+        "xgbregressor_gbtree_3": float,
+        "xgbregressor_gbtree_4": float,
+        "xgbregressor_gbtree_5": float,
+
+        "xgbclassifier_dart_1": float,
+        "xgbclassifier_dart_2": float,
+        "xgbclassifier_dart_3": float,
+        "xgbclassifier_dart_4": float,
+        "xgbclassifier_dart_5": float,
+
+        "xgbregressor_dart_1": float,
+        "xgbregressor_dart_2": float,
+        "xgbregressor_dart_3": float,
+        "xgbregressor_dart_4": float,
+        "xgbregressor_dart5": float,
 
         "conv1d_lstm_classification_1": float,
         "conv1d_lstm_classification_2": float,

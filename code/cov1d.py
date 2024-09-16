@@ -37,7 +37,6 @@ class Conv1ResidualBlock(nn.Module):
 
         return out
 
-
 class Conv1DModel(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, num_blocks=1, l2_lambda=0.01, dropout_rate=0.5,
                  classification=True):

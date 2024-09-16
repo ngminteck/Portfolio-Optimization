@@ -7,6 +7,7 @@ from sklearn.metrics import root_mean_squared_error
 import shutil
 
 from directory_manager import *
+from optuna_config import *
 from lstm import *
 
 Model_Type = "lstm_regression"
@@ -21,7 +22,6 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     TEST_SIZE = 0.2
     RANDOM_STATE = 42
     def lstm_regression_objective(trial):
-
 
         sequence_length = trial.suggest_int('sequence_length', 2, 30)
         hidden_size = trial.suggest_int('hidden_size', 16, 128)
@@ -78,7 +78,7 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         return best_val_rmse
 
     study = optuna.create_study(direction='minimize')
-    study.optimize(lstm_regression_objective, n_trials=100)
+    study.optimize(lstm_regression_objective, n_trials=MAX_TRIALS)
 
     # Get all trials
     all_trials = study.trials
@@ -120,8 +120,8 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
             old_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pth'
             old_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
 
-            os.rename(old_model_path, new_model_path)
-            os.rename(old_params_path, new_params_path)
+            rename_and_overwrite(old_model_path, new_model_path)
+            rename_and_overwrite(old_params_path, new_params_path)
 
         else:
             trial_index = int(key.split('_')[1])
