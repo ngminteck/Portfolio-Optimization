@@ -13,6 +13,7 @@ from xgbrfregressor import *
 from xgbclassifier_gbtree import *
 from xgbregressor_gbtree import *
 
+from cov1d_lstm_classification import *
 from cov1d_lstm_regression import *
 
 def main_training():
@@ -64,6 +65,7 @@ def main_training():
         xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol)
         xgbregressor_gbtree_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
+        conv1d_lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
         conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
         break

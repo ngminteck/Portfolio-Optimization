@@ -15,8 +15,10 @@ class Conv1DLSTMModel(nn.Module):
 
     def forward(self, x):
         out = self.blocks(x)
+        out = out.permute(0, 2, 1)  # Change shape to (batch_size, sequence_length, input_size) position
         out, _ = self.lstm(out)
-        out = self.global_avg_pool(out)
+        out = self.global_avg_pool(
+            out.permute(0, 2, 1))  # Change shape back to (batch_size, input_size, sequence_length) position
         out = out.view(out.size(0), -1)  # Flatten the tensor
         out = self.fc(out)
         if self.classification:

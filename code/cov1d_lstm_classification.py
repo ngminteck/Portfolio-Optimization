@@ -3,7 +3,7 @@ import optuna
 import json
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import root_mean_squared_error
+from sklearn.metrics import accuracy_score
 import numpy as np
 import shutil
 
@@ -11,13 +11,13 @@ from directory_manager import *
 from optuna_config import *
 from cov1d_lstm import *
 
-Model_Type = "conv1d_lstm_regression"
+Model_Type = "conv1d_lstm_classification"
 
-def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
+def conv1d_lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
 
     X = X.to_numpy()
-    y = y.to_numpy().reshape(-1, 1)
+    y = y.to_numpy()
     X = X.reshape((X.shape[0], 1, -1))
 
     # Split data into training and validation sets
@@ -25,7 +25,7 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
     RANDOM_STATE = 42
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE)
 
-    def conv1d_lstm_regression_objective(trial):
+    def conv1d_lstm_classification_objective(trial):
 
         in_channels = X_train.shape[1]
         out_channels = trial.suggest_int('out_channels', 16, 128)
@@ -39,18 +39,18 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
         patience = 10
 
         model = Conv1DLSTMModel(in_channels, out_channels, kernel_size, num_blocks, lstm_hidden_size, l2_lambda, dropout_rate,
-                            classification=False).to(device)
+                            classification=True).to(device)
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=l2_lambda)
-        criterion = nn.MSELoss()
+        criterion = nn.CrossEntropyLoss()
 
-        best_val_rmse = np.inf
+        best_val_accuracy = -np.inf
         epochs_no_improve = 0
 
         input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-        target_train = torch.tensor(y_train, dtype=torch.float32).to(device)
+        target_train = torch.tensor(y_train, dtype=torch.long).to(device)
 
         input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-        target_val = torch.tensor(y_val, dtype=torch.float32).to(device)
+        target_val = torch.tensor(y_val, dtype=torch.long).to(device)
 
         for epoch in range(epochs):
             model.train()
@@ -60,13 +60,15 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
             loss.backward()
             optimizer.step()
 
+            # Validation
             model.eval()
             with torch.no_grad():
                 val_output = model(input_val)
-                val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
+                val_pred = val_output.argmax(dim=1)
+                val_accuracy = accuracy_score(target_val.cpu(), val_pred.cpu())
 
-                if val_rmse < best_val_rmse:
-                    best_val_rmse = val_rmse
+                if val_accuracy > best_val_accuracy:
+                    best_val_accuracy = val_accuracy
                     epochs_no_improve = 0
                 else:
                     epochs_no_improve += 1
@@ -74,16 +76,16 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
                 if epochs_no_improve >= patience:
                     break
 
-        return best_val_rmse
+        return best_val_accuracy
 
-    study = optuna.create_study(direction='minimize')
-    study.optimize(conv1d_lstm_regression_objective,  n_trials=MAX_TRIALS)
+    study = optuna.create_study(direction='maximize')
+    study.optimize(conv1d_lstm_classification_objective,  n_trials=MAX_TRIALS)
 
     # Get all trials
     all_trials = study.trials
 
     # Sort trials by their objective values in ascending order
-    sorted_trials = sorted(all_trials, key=lambda trial: trial.value)
+    sorted_trials = sorted(all_trials, key=lambda trial: trial.value, reverse=True)
 
     metrics = {}
     for i in range(0, 5):
@@ -104,7 +106,7 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
             if not pd.isnull(current_score):
                 metrics[f'old_{i}'] = current_score
 
-    sorted_metrics = dict(sorted(metrics.items(), key=lambda item: item[1]))
+    sorted_metrics = dict(sorted(metrics.items(), key=lambda item: item[1], reverse=True))
     sorted_metrics_list = list(sorted_metrics.items())
 
     for i in range(4, -1, -1):
@@ -131,19 +133,19 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
             epochs = 1000
             patience = 10
 
-            model = Conv1DLSTMModel(in_channels, trial_params['out_channels'], trial_params['kernel_size'],  trial_params['num_blocks'], trial_params['lstm_hidden_size'], trial_params['l2_lambda'], trial_params['dropout_rate'],classification=False).to(device)
+            model = Conv1DLSTMModel(in_channels, trial_params['out_channels'], trial_params['kernel_size'],  trial_params['num_blocks'], trial_params['lstm_hidden_size'], trial_params['l2_lambda'], trial_params['dropout_rate'],classification=True).to(device)
 
             optimizer = optim.Adam(model.parameters(), lr=trial_params['lr'], weight_decay=trial_params['l2_lambda'])
-            criterion = nn.MSELoss()
+            criterion = nn.CrossEntropyLoss()
 
-            best_val_rmse = np.inf
+            best_val_accuracy = -np.inf
             epochs_no_improve = 0
 
             input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-            target_train = torch.tensor(y_train, dtype=torch.float32).to(device)
+            target_train = torch.tensor(y_train, dtype=torch.long).to(device)
 
             input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-            target_val = torch.tensor(y_val, dtype=torch.float32).to(device)
+            target_val = torch.tensor(y_val, dtype=torch.long).to(device)
 
             for epoch in range(epochs):
                 model.train()
@@ -153,13 +155,15 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
                 loss.backward()
                 optimizer.step()
 
+                # Validation
                 model.eval()
                 with torch.no_grad():
                     val_output = model(input_val)
-                    val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
+                    val_pred = val_output.argmax(dim=1)
+                    val_accuracy = accuracy_score(target_val.cpu(), val_pred.cpu())
 
-                    if val_rmse < best_val_rmse:
-                        best_val_rmse = val_rmse
+                    if val_accuracy > best_val_accuracy:
+                        best_val_accuracy = val_accuracy
                         epochs_no_improve = 0
                     else:
                         epochs_no_improve += 1
@@ -180,7 +184,7 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
     # Save the updated ticker_df back to the CSV
     ticker_df.to_csv(Ticker_Hyperparams_Model_Metrics_Csv, index=False)
 
-def conv1d_lstm_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperparameter_search=False,
+def conv1d_lstm_classification_resume_training(X, y, gpu_available, ticker_symbol, hyperparameter_search=False,
                                           delete_old_data=False):
 
     if delete_old_data:
@@ -196,7 +200,7 @@ def conv1d_lstm_regression_resume_training(X, y, gpu_available, ticker_symbol, h
             break
 
     if not all_existed or hyperparameter_search:
-        conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
+        conv1d_lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbol)
 
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
