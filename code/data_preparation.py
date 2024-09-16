@@ -48,6 +48,7 @@ def set_target(df):
 
 
 def split_train_and_test_data_and_save(df, cutoff_date, ticker_symbol):
+    df.to_csv(f'../data/all/{ticker_symbol}.csv')
     train_df = df[df.index < cutoff_date]
     test_df1 = train_df.tail(30).copy(deep=True)
     test_df2 = df[df.index >= cutoff_date]

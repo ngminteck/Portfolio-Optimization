@@ -44,23 +44,12 @@ def make_all_directory():
     os.makedirs('../feature_importance/xbclassifier', exist_ok=True)
     os.makedirs('../feature_importance/xbregressor', exist_ok=True)
 
+    os.makedirs('../data/all', exist_ok=True)
     os.makedirs('../data/train', exist_ok=True)
     os.makedirs('../data/test', exist_ok=True)
 
 
 def load_or_create_ticker_df(csv_file_path):
-    """
-    Load the existing ticker DataFrame from a CSV file if it exists,
-    otherwise create a new DataFrame with predefined column types.
-    Ensure the DataFrame has the specified columns, add any missing columns,
-    and rearrange the columns in alphabetical order, excluding 'Ticker_Symbol'.
-
-    Args:
-    csv_file_path (str): The path to the CSV file.
-
-    Returns:
-    pd.DataFrame: The loaded or newly created DataFrame.
-    """
     # Define the column types
     column_types = {
         "Ticker_Symbol": str,

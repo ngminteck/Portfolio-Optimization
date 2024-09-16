@@ -24,7 +24,8 @@ def main_data_collection():
 
     for ticker_symbol in ticker_symbol_list:
         df, query_search = get_data_from_yahoo_finance(ticker_symbol, start_date, end_date)
-        if df is None or len(df) == 0:
+        if df is None or len(df) <= 30:
+            print(f"{ticker_symbol} from yahoo finance have less than or equal to 30 entry and will be skipped.")
             continue
         print(f"Fetching {ticker_symbol} from yahoo finance was successfully")
         df = get_technical_indicator(df)

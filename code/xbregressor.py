@@ -11,9 +11,7 @@ from directory_manager import *
 Model_Type = "xbregressor"
 
 
-def xbregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol, delete_old_data = False):
-    if delete_old_data:
-        delete_hyperparameter_search_model(ticker_symbol, Model_Type)
+def xbregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
 
     def xbregressor_objective(trial):
         param = {
