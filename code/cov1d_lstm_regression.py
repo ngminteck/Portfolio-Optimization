@@ -65,6 +65,13 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
                 val_output = model(input_val)
                 val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
 
+                # Report intermediate objective value
+                trial.report(val_rmse, epoch)
+
+                # Prune unpromising trials
+                if trial.should_prune():
+                    raise optuna.TrialPruned()
+
                 if val_rmse < best_val_rmse:
                     best_val_rmse = val_rmse
                     epochs_no_improve = 0
@@ -76,7 +83,7 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
 
         return best_val_rmse
 
-    study = optuna.create_study(direction='minimize')
+    study = optuna.create_study(direction='minimize', pruner=optuna.pruners.MedianPruner())
     study.optimize(conv1d_lstm_regression_objective,  n_trials=MAX_TRIALS)
 
     # Get all trials

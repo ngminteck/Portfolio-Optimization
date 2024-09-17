@@ -19,7 +19,7 @@ from cov1d_lstm_regression import *
 from sklearn.feature_selection import RFE
 from xgboost import XGBRegressor
 
-def main_training():
+def main_training(classification = False):
     logical_cores = os.cpu_count()
     print(f"Number of logical CPU cores: {logical_cores}")
 
@@ -49,28 +49,27 @@ def main_training():
         dataframe = pd.read_csv(f"../data/train/{ticker_symbol}.csv")
 
         X, y_classifier, y_regressor = training_preprocess_data(dataframe)
-
-        break
         # If you want to perform hyperparameter search and update the existing model:
         # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, True)
 
         # If you want to start hyperparameter search from the beginning and delete old records (mostly needed if features and target have been changed):
         # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, True, True)
 
-        conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
-        conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-
-        lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
-        lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-
-        xgbrfclassifier_resume_training(X, y_classifier, gpu_available, ticker_symbol)
-        xgbrfregressor_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-
-        xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol)
         xgbregressor_gbtree_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-
-        conv1d_lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+        xgbrfregressor_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+        conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+        lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
         conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+
+        if classification:
+            xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+            xgbrfclassifier_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+            conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+            lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+            conv1d_lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+
+        print(f"{ticker_symbol} done training.")
+
 
 
 

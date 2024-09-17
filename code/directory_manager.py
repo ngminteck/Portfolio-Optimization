@@ -58,6 +58,8 @@ def make_all_directory():
     os.makedirs('../data/train', exist_ok=True)
     os.makedirs('../data/test', exist_ok=True)
 
+    os.makedirs('../data/commodities_historical_data/original', exist_ok=True)
+
 def rename_and_overwrite(old_path, new_path):
     # Check if the new model path already exists
     if os.path.exists(new_path):
