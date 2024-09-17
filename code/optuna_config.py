@@ -1,4 +1,4 @@
-MAX_TRIALS = 50
+MAX_TRIALS = 20
 
 class EarlyStoppingCallback:
     def __init__(self, patience=10):

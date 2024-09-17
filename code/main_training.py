@@ -16,6 +16,9 @@ from xgbregressor_gbtree import *
 from cov1d_lstm_classification import *
 from cov1d_lstm_regression import *
 
+from sklearn.feature_selection import RFE
+from xgboost import XGBRegressor
+
 def main_training():
     logical_cores = os.cpu_count()
     print(f"Number of logical CPU cores: {logical_cores}")
@@ -47,6 +50,7 @@ def main_training():
 
         X, y_classifier, y_regressor = training_preprocess_data(dataframe)
 
+        break
         # If you want to perform hyperparameter search and update the existing model:
         # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, True)
 
@@ -68,7 +72,7 @@ def main_training():
         conv1d_lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
         conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
-        break
+
 
 
 
