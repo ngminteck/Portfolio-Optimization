@@ -131,6 +131,8 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
         else:
             trial_index = int(key.split('_')[1])
             trial = all_trials[trial_index]
+            with open(new_params_path, 'w') as f:
+                json.dump(trial.params, f)
             trial_params = trial.params
 
             in_channels = X_train.shape[1]
@@ -163,7 +165,6 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
                     val_output = model(input_val)
                     val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
 
-
                     if val_rmse < best_val_rmse:
                         best_val_rmse = val_rmse
                         epochs_no_improve = 0
@@ -174,9 +175,6 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
                         break
 
             # Save the new model from trial
-
-            with open(new_params_path, 'w') as f:
-                json.dump(trial.params, f)
             torch.save(model.state_dict(), new_model_path)
 
         # Update ticker_df with the new metrics
@@ -195,9 +193,9 @@ def conv1d_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperp
     all_existed = True
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-        params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
-        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(params_path):
+        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(hyperparameters_search_model_params_path):
             all_existed = False
             break
 
@@ -206,8 +204,13 @@ def conv1d_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperp
 
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-        trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pkl'
+        trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+
+        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+
         shutil.copy2(hyperparameters_search_model_path, trained_model_path)
+        shutil.copy2(hyperparameters_search_model_params_path, trained_model_params_path)
 
     hyperparameters_search_model_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
 
@@ -229,3 +232,50 @@ def conv1d_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperp
                 hyperparameters_search_model_df['Ticker_Symbol'] == ticker_symbol, column].values[0]
 
     trained_model_df.to_csv(Ticker_Trained_Model_Metrics_Csv, index=False)
+
+
+def conv1d_regression_predict(X, gpu_available, ticker_symbol, no=1):
+    device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
+    trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.pth'
+    trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.json'
+
+    # Check if the model exists
+    if not os.path.exists(trained_model_path) or not os.path.exists(trained_model_params_path):
+        return None
+
+    # Load the model parameters from the JSON file
+    with open(trained_model_params_path, 'r') as f:
+        model_params = json.load(f)
+
+    X = X.to_numpy()
+    X = X.reshape((X.shape[0], 1, -1))
+    in_channels = X.shape[1]
+    out_channels = model_params['out_channels']
+    kernel_size = model_params['kernel_size']
+    num_blocks = model_params['num_blocks']
+    l2_lambda = model_params['l2_lambda']
+    dropout_rate = model_params['dropout_rate']
+
+    # Initialize the model with the loaded parameters
+    model = Conv1DModel(in_channels, out_channels, kernel_size, num_blocks, l2_lambda, dropout_rate,
+                        classification=False).to(device)
+
+    # Load the model state dict with strict=False to ignore mismatched layers
+    model.load_state_dict(torch.load(trained_model_path, map_location=device, weights_only=True), strict=False)
+    model.eval()  # Set the model to evaluation mode
+
+    input_tensor = torch.tensor(X, dtype=torch.float32).to(device)
+
+    # Ensure the input tensor shape matches the model's expected input shape
+    if input_tensor.ndimension() == 2:
+        input_tensor = input_tensor.unsqueeze(0)  # Add batch dimension if missing
+
+    with torch.no_grad():  # Disable gradient calculation
+        preds = model(input_tensor)
+
+    # Convert predictions to a DataFrame
+    preds = preds.squeeze().cpu()
+    preds_numpy = preds.numpy()
+    preds_df = pd.DataFrame(preds_numpy, columns=['Prediction'])
+
+    return preds_df

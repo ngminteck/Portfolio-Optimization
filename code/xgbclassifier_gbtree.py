@@ -93,12 +93,12 @@ def xgbclassifier_gbtree_hyperparameters_search(X, y, gpu_available, ticker_symb
         else:
             trial_index = int(key.split('_')[1])
             trial = all_trials[trial_index]
+            with open(new_params_path, 'w') as f:
+                json.dump(trial.params, f)
             trial_params = trial.params
             model = XGBClassifier(**trial_params)
             model.fit(X_train, y_train, eval_set=[(X_valid, y_valid)], verbose=False)
             joblib.dump(model, new_model_path)
-            with open(new_params_path, 'w') as f:
-                json.dump(trial.params, f)
 
             feature_importance = pd.DataFrame(model.feature_importances_, index=X.columns, columns=['importance'])
             feature_importance = feature_importance.sort_values(by='importance', ascending=False)
@@ -120,9 +120,9 @@ def xgbclassifier_gbtree_resume_training(X, y, gpu_available, ticker_symbol, hyp
     all_existed = True
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pkl'
-        params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
-        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(params_path):
+        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(hyperparameters_search_model_params_path):
             all_existed = False
             break
 
@@ -132,7 +132,12 @@ def xgbclassifier_gbtree_resume_training(X, y, gpu_available, ticker_symbol, hyp
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pkl'
         trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pkl'
+
+        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+
         shutil.copy2(hyperparameters_search_model_path, trained_model_path)
+        shutil.copy2(hyperparameters_search_model_params_path, trained_model_params_path)
 
     hyperparameters_search_model_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
 
@@ -155,7 +160,7 @@ def xgbclassifier_gbtree_resume_training(X, y, gpu_available, ticker_symbol, hyp
     trained_model_df.to_csv(Ticker_Trained_Model_Metrics_Csv, index=False)
 
 
-def xgbclassifier_gbtree_predict(X, ticker_symbol , no = 1):
+def xgbclassifier_gbtree_predict(X, ticker_symbol, no=1):
     trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.pkl'
 
     # Check if the model exists
@@ -163,9 +168,10 @@ def xgbclassifier_gbtree_predict(X, ticker_symbol , no = 1):
         return None
 
     # Load the trained model
-    best_model = joblib.load(trained_model_path)
+    model = joblib.load(trained_model_path)
 
     # Make predictions
-    preds = best_model.predict(X)
+    predictions = model.predict(X)
 
-    return preds
+    # Return predictions as a DataFrame
+    return pd.DataFrame(predictions, columns=['Predicted'])

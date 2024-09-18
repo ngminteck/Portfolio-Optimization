@@ -67,6 +67,13 @@ def conv1d_classification_hyperparameters_search(X, y, gpu_available, ticker_sym
                 val_pred = val_output.argmax(dim=1)
                 val_accuracy = accuracy_score(target_val.cpu(), val_pred.cpu())
 
+                # Report intermediate objective value
+                trial.report(val_accuracy, epoch)
+
+                # Prune unpromising trials
+                if trial.should_prune():
+                    raise optuna.TrialPruned()
+
                 if val_accuracy > best_val_accuracy:
                     best_val_accuracy = val_accuracy
                     epochs_no_improve = 0
@@ -78,7 +85,7 @@ def conv1d_classification_hyperparameters_search(X, y, gpu_available, ticker_sym
 
         return best_val_accuracy
 
-    study = optuna.create_study(direction='maximize')
+    study = optuna.create_study(direction='maximize', pruner=optuna.pruners.MedianPruner())
     study.optimize(conv1d_classification_objective, n_trials=MAX_TRIALS)
 
     # Get all trials
@@ -127,6 +134,8 @@ def conv1d_classification_hyperparameters_search(X, y, gpu_available, ticker_sym
         else:
             trial_index = int(key.split('_')[1])
             trial = all_trials[trial_index]
+            with open(new_params_path, 'w') as f:
+                json.dump(trial.params, f)
             trial_params = trial.params
 
             in_channels = X_train.shape[1]
@@ -177,8 +186,6 @@ def conv1d_classification_hyperparameters_search(X, y, gpu_available, ticker_sym
 
             # Save the new model from trial
             torch.save(model.state_dict(), new_model_path)
-            with open(new_params_path, 'w') as f:
-                json.dump(trial.params, f)
 
         # Update ticker_df with the new metrics
         column_name = f"{Model_Type}_{rank}"
@@ -195,9 +202,9 @@ def conv1d_classification_resume_training(X, y, gpu_available, ticker_symbol, hy
     all_existed = True
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-        params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
-        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(params_path):
+        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(hyperparameters_search_model_params_path):
             all_existed = False
             break
 
@@ -206,8 +213,13 @@ def conv1d_classification_resume_training(X, y, gpu_available, ticker_symbol, hy
 
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-        trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pkl'
+        trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+
+        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+
         shutil.copy2(hyperparameters_search_model_path, trained_model_path)
+        shutil.copy2(hyperparameters_search_model_params_path, trained_model_params_path)
 
     hyperparameters_search_model_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
 

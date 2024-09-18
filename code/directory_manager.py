@@ -60,6 +60,8 @@ def make_all_directory():
 
     os.makedirs('../data/commodities_historical_data/original', exist_ok=True)
 
+    os.makedirs('../result/ticker', exist_ok=True)
+
 def rename_and_overwrite(old_path, new_path):
     # Check if the new model path already exists
     if os.path.exists(new_path):
@@ -215,3 +217,55 @@ def delete_hyperparameter_search_model(ticker_symbol, model_type):
             print(f"Error processing CSV file: {e}")
     else:
         print(f"{Ticker_Hyperparams_Model_Metrics_Csv} does not exist")
+
+def load_or_create_ticker_metric_df(csv_file_path):
+    # Define the column types
+    column_types = {
+        "Ticker_Symbol": str,
+
+        "Top_1_CNN1D_Sign_Accuracy_PERCENT": float,
+        "Top_1_CNN1D_Value_RMSE_PERCENT": float,
+        "Top_5_CNN1D_Sign_Accuracy_PERCENT": float,
+        "Top_5_CNN1D_Value_RMSE_PERCENT": float,
+
+        "Top_1_LSTM_Sign_Accuracy_PERCENT": float,
+        "Top_1_LSTM_Value_RMSE_PERCENT": float,
+        "Top_5_LSTM_Sign_Accuracy_PERCENT": float,
+        "Top_5_LSTM_Value_RMSE_PERCENT": float,
+
+        "Top_1_CNN1D_LSTM_Sign_Accuracy_PERCENT": float,
+        "Top_1_CNN1D_LSTM_Value_RMSE_PERCENT": float,
+        "Top_5_CNN1D_LSTM_Sign_Accuracy_PERCENT": float,
+        "Top_5_CNN1D_LSTM_Value_RMSE_PERCENT": float,
+
+        "Top_1_RF_Sign_Accuracy_PERCENT": float,
+        "Top_1_RF_Value_RMSE_PERCENT": float,
+        "Top_5_RF_Sign_Accuracy_PERCENT": float,
+        "Top_5_RF_Value_RMSE_PERCENT": float,
+
+        "Top_1_GT_Sign_Accuracy_PERCENT": float,
+        "Top_1_GT_Value_RMSE_PERCENT": float,
+        "Top_5_GT_Sign_Accuracy_PERCENT": float,
+        "Top_5_GT_Value_RMSE_PERCENT": float,
+
+        "Top_1_Combined_Sign_Accuracy_PERCENT": float,
+        "Top_1_Combined_Value_RMSE_PERCENT": float,
+        "Top_5_Combined_Sign_Accuracy_PERCENT": float,
+        "Top_5_Combined_Value_RMSE_PERCENT": float,
+
+    }
+
+    if os.path.isfile(csv_file_path):
+        # Load the existing file into a DataFrame
+        ticker_df = pd.read_csv(csv_file_path)
+
+        # Ensure all specified columns are present
+        for column, dtype in column_types.items():
+            if column not in ticker_df.columns:
+                ticker_df[column] = pd.Series(dtype=dtype)
+
+    else:
+        # Create a new DataFrame with the specified column types
+        ticker_df = pd.DataFrame(columns=column_types.keys()).astype(column_types)
+
+    return ticker_df

@@ -1,23 +1,20 @@
 import xgboost
 
-from training_preprocessing import *
+from data_preprocessing import *
 
 from cov1d_classification import *
 from cov1d_regression import *
 from lstm_classification import *
 from lstm_regression import *
-
-from xgbrfclassifier import *
-from xgbrfregressor import *
-
-from xgbclassifier_gbtree import *
-from xgbregressor_gbtree import *
-
 from cov1d_lstm_classification import *
 from cov1d_lstm_regression import *
 
-from sklearn.feature_selection import RFE
-from xgboost import XGBRegressor
+from xgbrfclassifier import *
+from xgbrfregressor import *
+from xgbclassifier_gbtree import *
+from xgbregressor_gbtree import *
+
+
 
 def main_training(classification = False):
     logical_cores = os.cpu_count()
@@ -46,9 +43,10 @@ def main_training(classification = False):
         ticker_list = [os.path.splitext(f)[0] for f in os.listdir(path) if f.endswith('.csv')]
 
     for ticker_symbol in ticker_list:
-        dataframe = pd.read_csv(f"../data/train/{ticker_symbol}.csv")
+        df = pd.read_csv(f"../data/train/{ticker_symbol}.csv")
 
-        X, y_classifier, y_regressor = training_preprocess_data(dataframe)
+        X, y_classifier, y_regressor = training_preprocess_data(df)
+
         # If you want to perform hyperparameter search and update the existing model:
         # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, True)
 
@@ -69,6 +67,7 @@ def main_training(classification = False):
             conv1d_lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
 
         print(f"{ticker_symbol} done training.")
+
 
 
 

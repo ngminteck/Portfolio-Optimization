@@ -31,7 +31,7 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         lr = trial.suggest_float('lr', 1e-5, 1e-1)
 
         # Create sequences
-        X_seq, y_seq = create_sequences(X, y, sequence_length)
+        X_seq, y_seq = create_train_sequences(X, y, sequence_length)
 
         X_train, X_val, y_train, y_val = train_test_split(X_seq, y_seq, test_size=TEST_SIZE, random_state=RANDOM_STATE)
 
@@ -133,9 +133,11 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         else:
             trial_index = int(key.split('_')[1])
             trial = all_trials[trial_index]
+            with open(new_params_path, 'w') as f:
+                json.dump(trial.params, f)
             trial_params = trial.params
 
-            X_seq, y_seq = create_sequences(X, y, trial_params['sequence_length'])
+            X_seq, y_seq = create_train_sequences(X, y, trial_params['sequence_length'])
 
             X_train, X_val, y_train, y_val = train_test_split(X_seq, y_seq, test_size=TEST_SIZE,
                                                               random_state=RANDOM_STATE)
@@ -181,8 +183,6 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
 
             # Save the new model from trial
             torch.save(model.state_dict(), new_model_path)
-            with open(new_params_path, 'w') as f:
-                json.dump(trial.params, f)
 
         # Update ticker_df with the new metrics
         column_name = f"{Model_Type}_{rank}"
@@ -199,9 +199,9 @@ def lstm_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperpar
     all_existed = True
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-        params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
-        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(params_path):
+        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(hyperparameters_search_model_params_path):
             all_existed = False
             break
 
@@ -210,8 +210,13 @@ def lstm_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperpar
 
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-        trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pkl'
+        trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+
+        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+
         shutil.copy2(hyperparameters_search_model_path, trained_model_path)
+        shutil.copy2(hyperparameters_search_model_params_path, trained_model_params_path)
 
     hyperparameters_search_model_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
 
@@ -232,3 +237,46 @@ def lstm_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperpar
             hyperparameters_search_model_df['Ticker_Symbol'] == ticker_symbol, column].values[0]
 
     trained_model_df.to_csv(Ticker_Trained_Model_Metrics_Csv, index=False)
+
+def lstm_regression_predict(X, gpu_available, ticker_symbol, no=1):
+    device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
+    trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.pth'
+    trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.json'
+
+    # Check if the model exists
+    if not os.path.exists(trained_model_path) or not os.path.exists(trained_model_params_path):
+        print(f"Model or parameters file not found for {ticker_symbol} with number {no}.")
+        return None
+
+    # Load the model parameters from the JSON file
+    with open(trained_model_params_path, 'r') as f:
+        model_params = json.load(f)
+
+    X = X.to_numpy()
+    sequence_length = model_params['sequence_length']
+    hidden_size = model_params['hidden_size']
+    num_layers = model_params['num_layers']
+    num_blocks = model_params['num_blocks']
+    dropout_rate = model_params['dropout_rate']
+
+    # Create sequences from X
+    X_seq = create_predict_sequences(X, sequence_length)
+
+    input_size = X_seq.shape[2]
+
+    # Initialize the model with the loaded parameters and move it to the device
+    model = LSTMModel(input_size, hidden_size, num_blocks, num_layers, dropout_rate, classification=False).to(device)
+    model.load_state_dict(torch.load(trained_model_path, map_location=device, weights_only=True), strict=False)
+    model.eval()  # Set the model to evaluation mode
+
+    input_tensor = torch.tensor(X_seq, dtype=torch.float32).to(device)
+
+    with torch.no_grad():  # Disable gradient calculation
+        preds = model(input_tensor)
+
+    # Convert predictions to a DataFrame
+    preds = preds.squeeze().cpu()  # Move predictions back to CPU and remove any extra dimensions if necessary
+    preds_numpy = preds.numpy()
+    preds_df = pd.DataFrame(preds_numpy, columns=['Prediction'])
+
+    return preds_df
