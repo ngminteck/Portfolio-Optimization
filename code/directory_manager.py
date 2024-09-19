@@ -7,7 +7,9 @@ Ticker_Trained_Model_Metrics_Csv = "../models/trained_models/ticker_trained_mode
 
 Hyperparameters_Search_Models_Folder = "../models/hyperparameters_search_models/"
 Trained_Models_Folder = "../models/trained_models/"
+Models_Display = "../models/models_display/"
 Feature_Importance_Folder = "../feature_importance/"
+
 def make_all_directory():
     os.makedirs('../models/hyperparameters_search_models/conv1d_classification/', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/conv1d_regression/', exist_ok=True)
@@ -46,6 +48,25 @@ def make_all_directory():
     os.makedirs('../models/trained_models/conv1d_lstm_regression/', exist_ok=True)
     os.makedirs('../models/trained_models/conv1d_transformer_classification/', exist_ok=True)
     os.makedirs('../models/trained_models/conv1d_transformer_regression/', exist_ok=True)
+
+    os.makedirs('../models/models_display/conv1d_classification/', exist_ok=True)
+    os.makedirs('../models/models_display/conv1d_regression/', exist_ok=True)
+    os.makedirs('../models/models_display/lstm_classification/', exist_ok=True)
+    os.makedirs('../models/models_display/lstm_regression/', exist_ok=True)
+    os.makedirs('../models/models_display/transformer_classification/', exist_ok=True)
+    os.makedirs('../models/models_display/transformer_regression/', exist_ok=True)
+
+    os.makedirs('../models/models_display/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models/models_display/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/models_display/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models/models_display/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/models_display/xgbclassifier_dart', exist_ok=True)
+    os.makedirs('../models/models_display/xgbregressor_dart', exist_ok=True)
+
+    os.makedirs('../models/models_display/conv1d_lstm_classification/', exist_ok=True)
+    os.makedirs('../models/models_display/conv1d_lstm_regression/', exist_ok=True)
+    os.makedirs('../models/models_display/conv1d_transformer_classification/', exist_ok=True)
+    os.makedirs('../models/models_display/conv1d_transformer_regression/', exist_ok=True)
 
     os.makedirs('../feature_importance/xgbrfclassifier', exist_ok=True)
     os.makedirs('../feature_importance/xgbrfregressor', exist_ok=True)

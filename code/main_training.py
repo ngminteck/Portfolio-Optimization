@@ -56,7 +56,7 @@ def main_training(classification = False):
         xgbregressor_gbtree_resume_training(X, y_regressor, gpu_available, ticker_symbol)
         xgbrfregressor_resume_training(X, y_regressor, gpu_available, ticker_symbol)
         conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-        lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+        lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, True, True)
         conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
         if classification:

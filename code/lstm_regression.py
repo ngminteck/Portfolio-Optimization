@@ -26,7 +26,7 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         sequence_length = trial.suggest_int('sequence_length', 2, 30)
         hidden_size = trial.suggest_int('hidden_size', 16, 128)
         num_layers = trial.suggest_int('num_layers', 1, 3)
-        num_blocks = trial.suggest_int('num_blocks', 1, 5)
+        num_blocks = trial.suggest_int('num_blocks', 1, 3)
         dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
         lr = trial.suggest_float('lr', 1e-5, 1e-1)
 

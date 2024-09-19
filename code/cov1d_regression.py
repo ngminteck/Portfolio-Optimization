@@ -30,7 +30,7 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
         in_channels = X_train.shape[1]
         out_channels = trial.suggest_int('out_channels', 16, 128)
         kernel_size = trial.suggest_int('kernel_size', 3, 7)
-        num_blocks = trial.suggest_int('num_blocks', 1, 5)
+        num_blocks = trial.suggest_int('num_blocks', 1, 3)
         l2_lambda = trial.suggest_float('l2_lambda', 1e-5, 1e-2)
         dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
         lr = trial.suggest_float('lr', 1e-5, 1e-1)

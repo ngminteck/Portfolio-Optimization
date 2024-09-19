@@ -32,7 +32,7 @@ class Conv1ResidualBlock(nn.Module):
         out = self.dropout(out)
         out = self.conv2(out)
         out = self.bn2(out)
-        out = out + residual  # Ensure no in-place operation
+        out = out + residual
         out = self.relu(out)
 
         return out

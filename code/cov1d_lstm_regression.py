@@ -30,7 +30,7 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
         in_channels = X_train.shape[1]
         out_channels = trial.suggest_int('out_channels', 16, 128)
         kernel_size = trial.suggest_int('kernel_size', 3, 7)
-        num_blocks = trial.suggest_int('num_blocks', 1, 5)
+        num_blocks = trial.suggest_int('num_blocks', 1, 3)
         lstm_hidden_size = trial.suggest_int('lstm_hidden_size', 32, 128)
         l2_lambda = trial.suggest_float('l2_lambda', 1e-5, 1e-2)
         dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
@@ -239,6 +239,7 @@ def conv1d_lstm_regression_predict(X, gpu_available, ticker_symbol, no = 1):
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
     trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.pth'
     trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.json'
+    models_display_path = f'{Models_Display}{Model_Type}/{ticker_symbol}_{no}.png'
 
     # Check if the model exists
     if not os.path.exists(trained_model_path) or not os.path.exists(trained_model_params_path):
