@@ -2,19 +2,12 @@ import xgboost
 
 from data_preprocessing import *
 
-from cov1d_classification import *
-from cov1d_regression import *
-from lstm_classification import *
-from lstm_regression import *
-from cov1d_lstm_classification import *
-from cov1d_lstm_regression import *
-
-from xgbrfclassifier import *
 from xgbrfregressor import *
-from xgbclassifier_gbtree import *
 from xgbregressor_gbtree import *
-
 from grnn_regression import *
+from cov1d_regression import *
+from lstm_regression import *
+from cov1d_lstm_regression import *
 
 
 def mean_percentage_error(y_true, y_pred):

@@ -9,6 +9,7 @@ import shutil
 from directory_manager import *
 from optuna_config import *
 from lstm import *
+from sequence_length import *
 
 Model_Type = "lstm_regression"
 
@@ -31,7 +32,7 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         lr = trial.suggest_float('lr', 1e-5, 1e-1)
 
         # Create sequences
-        X_seq, y_seq = create_train_sequences(X, y, sequence_length)
+        X_seq, y_seq = create_lstm_train_sequences(X, y, sequence_length)
 
         X_train, X_val, y_train, y_val = train_test_split(X_seq, y_seq, test_size=TEST_SIZE, random_state=RANDOM_STATE)
 
@@ -137,7 +138,7 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
                 json.dump(trial.params, f)
             trial_params = trial.params
 
-            X_seq, y_seq = create_train_sequences(X, y, trial_params['sequence_length'])
+            X_seq, y_seq = create_lstm_train_sequences(X, y, trial_params['sequence_length'])
 
             X_train, X_val, y_train, y_val = train_test_split(X_seq, y_seq, test_size=TEST_SIZE,
                                                               random_state=RANDOM_STATE)
@@ -260,7 +261,7 @@ def lstm_regression_predict(X, gpu_available, ticker_symbol, no=1):
     dropout_rate = model_params['dropout_rate']
 
     # Create sequences from X
-    X_seq = create_predict_sequences(X, sequence_length)
+    X_seq = create_lstm_predict_sequences(X, sequence_length)
 
     input_size = X_seq.shape[2]
 

@@ -2,21 +2,20 @@ import xgboost
 
 from data_preprocessing import *
 
-from cov1d_classification import *
-from cov1d_regression import *
-from lstm_classification import *
-from lstm_regression import *
-from cov1d_lstm_classification import *
-from cov1d_lstm_regression import *
-
-from grnn_classification import *
+from xgbrfregressor import *
+from xgbregressor_gbtree import *
 from grnn_regression import *
+from cov1d_regression import *
+from lstm_regression import *
+from cov1d_lstm_regression import *
+from transformer_regression import *
 
 from xgbrfclassifier import *
-from xgbrfregressor import *
 from xgbclassifier_gbtree import *
-from xgbregressor_gbtree import *
-
+from grnn_classification import *
+from cov1d_classification import *
+from lstm_classification import *
+from cov1d_lstm_classification import *
 
 
 def main_training(classification = False):
@@ -62,6 +61,7 @@ def main_training(classification = False):
         conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
         lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
         conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+        transformer_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
         if classification:
             xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol)

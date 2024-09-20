@@ -1,56 +1,46 @@
-import torch
 import optuna
 import json
 import torch.optim as optim
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from torch.utils.data import DataLoader
 import shutil
 
 from directory_manager import *
 from optuna_config import *
-from lstm import *
+from transformer import *
 from sequence_length import *
 
-Model_Type = "lstm_classification"
+Model_Type = "transformer_regression"
 
-def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbol):
+def transformer_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
 
-    X = X.to_numpy()
-    y = y.to_numpy()
+    # Convert DataFrame to tensors
+    X_tensor = torch.tensor(X.values, dtype=torch.float32).to(device)
+    y_tensor = torch.tensor(y.values, dtype=torch.float32).unsqueeze(1).to(device)
 
-    TEST_SIZE = 0.2
-    RANDOM_STATE = 42
+    # Split data into training and validation sets
+    train_size = int(0.8 * len(X_tensor))
+    val_size = len(X_tensor) - train_size
+    input_train, input_val = torch.utils.data.random_split(X_tensor, [train_size, val_size])
+    target_train, target_val = torch.utils.data.random_split(y_tensor, [train_size, val_size])
 
-    def lstm_classification_objective(trial):
-
-        sequence_length = trial.suggest_int('sequence_length', 2, 30)
-        hidden_size = trial.suggest_int('hidden_size', 16, 128)
-        num_layers = trial.suggest_int('num_layers', 1, 3)
-        num_blocks = trial.suggest_int('num_blocks', 1, 5)
-        dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
+    def transformer_regression_objective(trial):
+        num_heads = trial.suggest_int('num_heads', 2, 8)
+        num_layers = trial.suggest_int('num_layers', 2, 6)
+        dropout = trial.suggest_float('dropout_rate', 0.1, 0.5)
         lr = trial.suggest_float('lr', 1e-5, 1e-1)
-
-        X_seq, y_seq = create_lstm_train_sequences(X, y, sequence_length)
-
-        X_train, X_val, y_train, y_val = train_test_split(X_seq, y_seq, test_size=TEST_SIZE, random_state=RANDOM_STATE)
-
-        input_size = X_train.shape[2]
         epochs = 1000
         patience = 10
 
-        model = LSTMModel(input_size, hidden_size, num_blocks, num_layers, dropout_rate, classification=True).to(device)
+        input_dim = X_tensor.shape[1]
+        embed_dim = ((input_dim + num_heads - 1) // num_heads) * num_heads
+
+        model = TransformerModel(input_dim=input_dim, embed_dim=embed_dim, num_heads=num_heads, num_layers=num_layers, output_dim=1, dropout=dropout, is_classification=False).to(device)
         optimizer = optim.Adam(model.parameters(), lr=lr)
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.MSELoss()
 
-        best_val_accuracy = -np.inf
+        best_val_rmse = np.inf
         epochs_no_improve = 0
-
-        input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-        target_train = torch.tensor(y_train, dtype=torch.long).to(device)
-
-        input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-        target_val = torch.tensor(y_val, dtype=torch.long).to(device)
 
         for epoch in range(epochs):
             model.train()
@@ -60,22 +50,20 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
             loss.backward()
             optimizer.step()
 
-            # Validation
             model.eval()
             with torch.no_grad():
                 val_output = model(input_val)
-                val_pred = val_output.argmax(dim=1)
-                val_accuracy = accuracy_score(target_val.cpu(), val_pred.cpu())
+                val_rmse = torch.sqrt(criterion(val_output, target_val)).item()
 
                 # Report intermediate objective value
-                trial.report(val_accuracy, epoch)
+                trial.report(val_rmse, epoch)
 
                 # Prune unpromising trials
                 if trial.should_prune():
                     raise optuna.TrialPruned()
 
-                if val_accuracy > best_val_accuracy:
-                    best_val_accuracy = val_accuracy
+                if val_rmse < best_val_rmse:
+                    best_val_rmse = val_rmse
                     epochs_no_improve = 0
                 else:
                     epochs_no_improve += 1
@@ -83,16 +71,16 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
                 if epochs_no_improve >= patience:
                     break
 
-        return best_val_accuracy
+        return best_val_rmse
 
-    study = optuna.create_study(direction='maximize', pruner=optuna.pruners.MedianPruner())
-    study.optimize(lstm_classification_objective, n_trials=MAX_TRIALS)
+    study = optuna.create_study(direction='minimize', pruner=optuna.pruners.MedianPruner())
+    study.optimize(transformer_regression_objective,  n_trials=MAX_TRIALS)
 
     # Get all trials
     all_trials = study.trials
 
-    # Sort trials by their objective values in descending order
-    sorted_trials = sorted(all_trials, key=lambda trial: trial.value, reverse=True)
+    # Sort trials by their objective values in ascending order
+    sorted_trials = sorted(all_trials, key=lambda trial: trial.value)
 
     metrics = {}
     for i in range(0, 5):
@@ -113,7 +101,7 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
             if not pd.isnull(current_score):
                 metrics[f'old_{i}'] = current_score
 
-    sorted_metrics = dict(sorted(metrics.items(), key=lambda item: item[1], reverse=True))
+    sorted_metrics = dict(sorted(metrics.items(), key=lambda item: item[1]))
     sorted_metrics_list = list(sorted_metrics.items())
 
     for i in range(4, -1, -1):
@@ -138,27 +126,24 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
                 json.dump(trial.params, f)
             trial_params = trial.params
 
-            X_seq, y_seq = create_lstm_train_sequences(X, y, trial_params['sequence_length'])
-
-            X_train, X_val, y_train, y_val = train_test_split(X_seq, y_seq, test_size=TEST_SIZE,
-                                                              random_state=RANDOM_STATE)
-
-            input_size = X_train.shape[2]
+            num_heads = trial_params['num_heads']
+            num_layers = trial_params['num_layers']
+            dropout = trial_params['dropout_rate']
+            lr = trial_params['lr']
             epochs = 1000
             patience = 10
 
-            model = LSTMModel(input_size,trial_params['hidden_size'], trial_params['num_blocks'], trial_params['num_layers'], trial_params['dropout_rate'], classification=True).to(device)
-            optimizer = optim.Adam(model.parameters(), lr=trial_params['lr'])
-            criterion = nn.CrossEntropyLoss()
+            input_dim = X_tensor.shape[1]
+            embed_dim = ((input_dim + num_heads - 1) // num_heads) * num_heads
 
-            best_val_accuracy = -np.inf
+            model = TransformerModel(input_dim=input_dim, embed_dim=embed_dim, num_heads=num_heads,
+                                     num_layers=num_layers, output_dim=1, dropout=dropout, is_classification=False).to(
+                device)
+            optimizer = optim.Adam(model.parameters(), lr=lr)
+            criterion = nn.MSELoss()
+
+            best_val_rmse = np.inf
             epochs_no_improve = 0
-
-            input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-            target_train = torch.tensor(y_train, dtype=torch.long).to(device)
-
-            input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-            target_val = torch.tensor(y_val, dtype=torch.long).to(device)
 
             for epoch in range(epochs):
                 model.train()
@@ -168,15 +153,13 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
                 loss.backward()
                 optimizer.step()
 
-                # Validation
                 model.eval()
                 with torch.no_grad():
                     val_output = model(input_val)
-                    val_pred = val_output.argmax(dim=1)
-                    val_accuracy = accuracy_score(target_val.cpu(), val_pred.cpu())
+                    val_rmse = torch.sqrt(criterion(val_output, target_val)).item()
 
-                    if val_accuracy > best_val_accuracy:
-                        best_val_accuracy = val_accuracy
+                    if val_rmse < best_val_rmse:
+                        best_val_rmse = val_rmse
                         epochs_no_improve = 0
                     else:
                         epochs_no_improve += 1
@@ -194,7 +177,8 @@ def lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbo
     # Save the updated ticker_df back to the CSV
     ticker_df.to_csv(Ticker_Hyperparams_Model_Metrics_Csv, index=False)
 
-def lstm_classification_resume_training(X, y, gpu_available, ticker_symbol, hyperparameter_search=False, delete_old_data=False):
+def transformer_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperparameter_search=False,
+                                          delete_old_data=False):
 
     if delete_old_data:
         delete_hyperparameter_search_model(ticker_symbol, Model_Type)
@@ -209,7 +193,7 @@ def lstm_classification_resume_training(X, y, gpu_available, ticker_symbol, hype
             break
 
     if not all_existed or hyperparameter_search:
-        lstm_classification_hyperparameters_search(X, y, gpu_available, ticker_symbol)
+        transformer_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
 
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
@@ -231,12 +215,17 @@ def lstm_classification_resume_training(X, y, gpu_available, ticker_symbol, hype
         trained_model_df = pd.concat([trained_model_df, new_row], ignore_index=True)
 
     # List of columns to copy
-    columns_to_copy = [f'{Model_Type}_1', f'{Model_Type}_2', f'{Model_Type}_3', f'{Model_Type}_4', f'{Model_Type}_5']
+    columns_to_copy = [f'{Model_Type}_1', f'{Model_Type}_2', f'{Model_Type}_3', f'{Model_Type}_4',
+                       f'{Model_Type}_5']
 
     # Copy the values from hyperparameters_search_model_df to trained_model_df for the specific row
     for column in columns_to_copy:
         trained_model_df.loc[trained_model_df['Ticker_Symbol'] == ticker_symbol, column] = \
-        hyperparameters_search_model_df.loc[
-            hyperparameters_search_model_df['Ticker_Symbol'] == ticker_symbol, column].values[0]
+            hyperparameters_search_model_df.loc[
+                hyperparameters_search_model_df['Ticker_Symbol'] == ticker_symbol, column].values[0]
 
     trained_model_df.to_csv(Ticker_Trained_Model_Metrics_Csv, index=False)
+
+
+
+
