@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 '''
 0: Date
@@ -185,27 +186,18 @@ import pandas as pd
 '''
 
 def training_preprocess_data(df):
+    # Handle missing and infinite values
     if df.isna().sum().sum() > 0 or df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
-        df = df.replace([float('inf'), float('-inf')], float('nan')).dropna()
-
-    #for index, column in enumerate(df.columns):
-     #   print(f"{index}: {column}")
+        df = df.replace([float('inf'), float('-inf')], np.nan).dropna()
 
     # Create target variables before dropping columns
     y_classifier = (np.sign(df['DAILY_MIDPRICE_CHANGE']) >= 0).astype(int)
-    y_regressor = df['DAILY_MIDPRICE_CHANGE']
+    y_scaler = StandardScaler()
+    y_regressor = df[['DAILY_MIDPRICE_CHANGE']]  # Convert to DataFrame
+    y_regressor_scaled = pd.DataFrame(y_scaler.fit_transform(y_regressor), columns=y_regressor.columns)
 
+    # Copy the DataFrame for feature processing
     X = df.copy(deep=True)
-
-    # Assuming df is your original DataFrame
-    # columns_to_backup = ['EMA', 'RSI_Overbought_Oversold_Signal', 'MACD', 'MACD_signal', 'MACD_hist', 'BB_UPPER', 'BB_MIDDLE', 'BB_LOWER', 'ADX', 'CCI']
-
-    # Create a backup DataFrame with only the specified columns
-    # df_backup = df[columns_to_backup].copy(deep=True)
-
-    X = X.drop(X.columns[100:163], axis=1)
-    # X = X.drop(X.columns[14:80], axis=1)
-    # X = X.drop(X.columns[14:163], axis=1)
 
     # Drop specific columns
     columns_to_drop = [
@@ -215,20 +207,24 @@ def training_preprocess_data(df):
         'DAILY_MIDPRICE_DIRECTION',
         'Date',
     ]
-
     X = X.drop(columns=columns_to_drop)
 
-    # Concatenate the backup DataFrame back to the original DataFrame
-    #X = pd.concat([X, df_backup], axis=1)
+    # Drop additional columns by index range if needed
+    X = X.drop(X.columns[100:163], axis=1)
 
-    return X, y_classifier, y_regressor
+    # Standardize the features
+    X_scaler = StandardScaler()
+    X_scaled = pd.DataFrame(X_scaler.fit_transform(X), columns=X.columns)
+
+    return X_scaled, y_classifier, y_regressor_scaled
 
 def predict_preprocess_data(df):
     # Select the last row and make a deep copy
     last_row_copy = df.iloc[-1].copy(deep=True)
 
+    # Handle missing and infinite values
     if df.isna().sum().sum() > 0 or df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
-        df = df.replace([float('inf'), float('-inf')], float('nan')).dropna()
+        df = df.replace([float('inf'), float('-inf')], np.nan).dropna()
 
     # Convert the last row copy to a DataFrame
     last_row_copy = pd.DataFrame([last_row_copy], columns=df.columns)
@@ -236,10 +232,13 @@ def predict_preprocess_data(df):
     # Concatenate the DataFrame with the last row copy
     df = pd.concat([df, last_row_copy], axis=0, ignore_index=True)
 
-    # Make a deep copy of the DataFrame
-    X = df.copy(deep=True)
+    # Scale the target variable
+    y_scaler = StandardScaler()
+    y_regressor = df[['DAILY_MIDPRICE_CHANGE']]  # Convert to DataFrame
+    y_regressor_scaled = pd.DataFrame(y_scaler.fit_transform(y_regressor), columns=y_regressor.columns)
 
-    X = X.drop(X.columns[100:163], axis=1)
+    # Make a deep copy of the DataFrame for features
+    X = df.copy(deep=True)
 
     # Drop specific columns by name
     columns_to_drop = [
@@ -249,8 +248,15 @@ def predict_preprocess_data(df):
         'DAILY_MIDPRICE_DIRECTION',
         'Date',
     ]
-
     X = X.drop(columns=columns_to_drop)
-    return X, df
+
+    # Drop additional columns by index range if needed
+    X = X.drop(X.columns[100:163], axis=1)
+
+    # Scale the features
+    X_scaler = StandardScaler()
+    X_scaled = pd.DataFrame(X_scaler.fit_transform(X), columns=X.columns)
+
+    return X_scaled, y_scaler
 
 

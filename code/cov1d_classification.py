@@ -60,7 +60,6 @@ def conv1d_classification_hyperparameters_search(X, y, gpu_available, ticker_sym
             loss.backward()
             optimizer.step()
 
-            # Validation
             model.eval()
             with torch.no_grad():
                 val_output = model(input_val)
@@ -149,8 +148,6 @@ def conv1d_classification_hyperparameters_search(X, y, gpu_available, ticker_sym
             optimizer = optim.Adam(model.parameters(), lr=trial_params['lr'], weight_decay=trial_params['l2_lambda'])
             criterion = nn.CrossEntropyLoss()
 
-
-
             best_val_accuracy = -np.inf
             epochs_no_improve = 0
 
@@ -168,7 +165,6 @@ def conv1d_classification_hyperparameters_search(X, y, gpu_available, ticker_sym
                 loss.backward()
                 optimizer.step()
 
-                # Validation
                 model.eval()
                 with torch.no_grad():
                     val_output = model(input_val)

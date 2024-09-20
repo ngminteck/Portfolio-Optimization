@@ -11,6 +11,14 @@ Models_Display = "../models/models_display/"
 Feature_Importance_Folder = "../feature_importance/"
 
 def make_all_directory():
+    os.makedirs('../models/hyperparameters_search_models/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/xgbregressor_gbtree', exist_ok=True)
+
+    os.makedirs('../models/hyperparameters_search_models/grnn_classification', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/grnn_regression', exist_ok=True)
+
     os.makedirs('../models/hyperparameters_search_models/conv1d_classification/', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/conv1d_regression/', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/lstm_classification/', exist_ok=True)
@@ -18,17 +26,17 @@ def make_all_directory():
     os.makedirs('../models/hyperparameters_search_models/transformer_classification/', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/transformer_regression/', exist_ok=True)
 
-    os.makedirs('../models/hyperparameters_search_models/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xgbclassifier_dart', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xgbregressor_dart', exist_ok=True)
-
     os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_classification/', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_regression/', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/conv1d_transformer_classification/', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/conv1d_transformer_regression/', exist_ok=True)
+
+    os.makedirs('../models/trained_models/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models/trained_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/trained_models/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models/trained_models/xgbregressor_gbtree', exist_ok=True)
+
+    os.makedirs('../models/trained_models/grnn_classification', exist_ok=True)
+    os.makedirs('../models/trained_models/grnn_regression', exist_ok=True)
+
 
     os.makedirs('../models/trained_models/conv1d_classification/', exist_ok=True)
     os.makedirs('../models/trained_models/conv1d_regression/', exist_ok=True)
@@ -37,43 +45,15 @@ def make_all_directory():
     os.makedirs('../models/trained_models/transformer_classification/', exist_ok=True)
     os.makedirs('../models/trained_models/transformer_regression/', exist_ok=True)
 
-    os.makedirs('../models/trained_models/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models/trained_models/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models/trained_models/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models/trained_models/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../models/trained_models/xgbclassifier_dart', exist_ok=True)
-    os.makedirs('../models/trained_models/xgbregressor_dart', exist_ok=True)
-
     os.makedirs('../models/trained_models/conv1d_lstm_classification/', exist_ok=True)
     os.makedirs('../models/trained_models/conv1d_lstm_regression/', exist_ok=True)
-    os.makedirs('../models/trained_models/conv1d_transformer_classification/', exist_ok=True)
-    os.makedirs('../models/trained_models/conv1d_transformer_regression/', exist_ok=True)
 
-    os.makedirs('../models/models_display/conv1d_classification/', exist_ok=True)
-    os.makedirs('../models/models_display/conv1d_regression/', exist_ok=True)
-    os.makedirs('../models/models_display/lstm_classification/', exist_ok=True)
-    os.makedirs('../models/models_display/lstm_regression/', exist_ok=True)
-    os.makedirs('../models/models_display/transformer_classification/', exist_ok=True)
-    os.makedirs('../models/models_display/transformer_regression/', exist_ok=True)
-
-    os.makedirs('../models/models_display/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models/models_display/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models/models_display/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models/models_display/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../models/models_display/xgbclassifier_dart', exist_ok=True)
-    os.makedirs('../models/models_display/xgbregressor_dart', exist_ok=True)
-
-    os.makedirs('../models/models_display/conv1d_lstm_classification/', exist_ok=True)
-    os.makedirs('../models/models_display/conv1d_lstm_regression/', exist_ok=True)
-    os.makedirs('../models/models_display/conv1d_transformer_classification/', exist_ok=True)
-    os.makedirs('../models/models_display/conv1d_transformer_regression/', exist_ok=True)
 
     os.makedirs('../feature_importance/xgbrfclassifier', exist_ok=True)
     os.makedirs('../feature_importance/xgbrfregressor', exist_ok=True)
     os.makedirs('../feature_importance/xgbclassifier_gbtree', exist_ok=True)
     os.makedirs('../feature_importance/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../feature_importance/xgbclassifier_dart', exist_ok=True)
-    os.makedirs('../feature_importance/xgbregressor_dart', exist_ok=True)
+
 
     os.makedirs('../data/all', exist_ok=True)
     os.makedirs('../data/train', exist_ok=True)
@@ -93,11 +73,23 @@ def load_or_create_ticker_df(csv_file_path):
     column_types = {
         "Ticker_Symbol": str,
 
-        "conv1d_classification_1": float,
-        "conv1d_classification_2": float,
-        "conv1d_classification_3": float,
-        "conv1d_classification_4": float,
-        "conv1d_classification_5": float,
+        "xgbrfregressor_1": float,
+        "xgbrfregressor_2": float,
+        "xgbrfregressor_3": float,
+        "xgbrfregressor_4": float,
+        "xgbrfregressor_5": float,
+
+        "xgbregressor_gbtree_1": float,
+        "xgbregressor_gbtree_2": float,
+        "xgbregressor_gbtree_3": float,
+        "xgbregressor_gbtree_4": float,
+        "xgbregressor_gbtree_5": float,
+
+        "grnn_regression_1": float,
+        "grnn_regression_2": float,
+        "grnn_regression_3": float,
+        "grnn_regression_4": float,
+        "grnn_regression_5": float,
 
         "conv1d_regression_1": float,
         "conv1d_regression_2": float,
@@ -105,23 +97,17 @@ def load_or_create_ticker_df(csv_file_path):
         "conv1d_regression_4": float,
         "conv1d_regression_5": float,
 
-        "lstm_classification_1": float,
-        "lstm_classification_2": float,
-        "lstm_classification_3": float,
-        "lstm_classification_4": float,
-        "lstm_classification_5": float,
-
         "lstm_regression_1": float,
         "lstm_regression_2": float,
         "lstm_regression_3": float,
         "lstm_regression_4": float,
         "lstm_regression_5": float,
 
-        "transformer_classification_1": float,
-        "transformer_classification_2": float,
-        "transformer_classification_3": float,
-        "transformer_classification_4": float,
-        "transformer_classification_5": float,
+        "conv1d_lstm_regression_1": float,
+        "conv1d_lstm_regression_2": float,
+        "conv1d_lstm_regression_3": float,
+        "conv1d_lstm_regression_4": float,
+        "conv1d_lstm_regression_5": float,
 
         "transformer_regression_1": float,
         "transformer_regression_2": float,
@@ -135,35 +121,29 @@ def load_or_create_ticker_df(csv_file_path):
         "xgbrfclassifier_4": float,
         "xgbrfclassifier_5": float,
 
-        "xgbrfregressor_1": float,
-        "xgbrfregressor_2": float,
-        "xgbrfregressor_3": float,
-        "xgbrfregressor_4": float,
-        "xgbrfregressor_5": float,
-
         "xgbclassifier_gbtree_1": float,
         "xgbclassifier_gbtree_2": float,
         "xgbclassifier_gbtree_3": float,
         "xgbclassifier_gbtree_4": float,
         "xgbclassifier_gbtree_5": float,
 
-        "xgbregressor_gbtree_1": float,
-        "xgbregressor_gbtree_2": float,
-        "xgbregressor_gbtree_3": float,
-        "xgbregressor_gbtree_4": float,
-        "xgbregressor_gbtree_5": float,
+        "grnn_classification_1": float,
+        "grnn_classification_2": float,
+        "grnn_classification_3": float,
+        "grnn_classification_4": float,
+        "grnn_classification_5": float,
 
-        "xgbclassifier_dart_1": float,
-        "xgbclassifier_dart_2": float,
-        "xgbclassifier_dart_3": float,
-        "xgbclassifier_dart_4": float,
-        "xgbclassifier_dart_5": float,
+        "conv1d_classification_1": float,
+        "conv1d_classification_2": float,
+        "conv1d_classification_3": float,
+        "conv1d_classification_4": float,
+        "conv1d_classification_5": float,
 
-        "xgbregressor_dart_1": float,
-        "xgbregressor_dart_2": float,
-        "xgbregressor_dart_3": float,
-        "xgbregressor_dart_4": float,
-        "xgbregressor_dart5": float,
+        "lstm_classification_1": float,
+        "lstm_classification_2": float,
+        "lstm_classification_3": float,
+        "lstm_classification_4": float,
+        "lstm_classification_5": float,
 
         "conv1d_lstm_classification_1": float,
         "conv1d_lstm_classification_2": float,
@@ -171,24 +151,11 @@ def load_or_create_ticker_df(csv_file_path):
         "conv1d_lstm_classification_4": float,
         "conv1d_lstm_classification_5": float,
 
-        "conv1d_lstm_regression_1": float,
-        "conv1d_lstm_regression_2": float,
-        "conv1d_lstm_regression_3": float,
-        "conv1d_lstm_regression_4": float,
-        "conv1d_lstm_regression_5": float,
-
-        "conv1d_transformer_classification_1": float,
-        "conv1d_transformer_classification_2": float,
-        "conv1d_transformer_classification_3": float,
-        "conv1d_transformer_classification_4": float,
-        "conv1d_transformer_classification_5": float,
-
-        "conv1d_transformer_regression_1": float,
-        "conv1d_transformer_regression_2": float,
-        "conv1d_transformer_regression_3": float,
-        "conv1d_transformer_regression_4": float,
-        "conv1d_transformer_regression_5": float,
-
+        "transformer_classification_1": float,
+        "transformer_classification_2": float,
+        "transformer_classification_3": float,
+        "transformer_classification_4": float,
+        "transformer_classification_5": float,
 
     }
 
@@ -244,35 +211,39 @@ def load_or_create_ticker_metric_df(csv_file_path):
     column_types = {
         "Ticker_Symbol": str,
 
-        "Top_1_CNN1D_Sign_Accuracy_PERCENT": float,
-        "Top_1_CNN1D_Value_RMSE_PERCENT": float,
-        "Top_5_CNN1D_Sign_Accuracy_PERCENT": float,
-        "Top_5_CNN1D_Value_RMSE_PERCENT": float,
-
-        "Top_1_LSTM_Sign_Accuracy_PERCENT": float,
-        "Top_1_LSTM_Value_RMSE_PERCENT": float,
-        "Top_5_LSTM_Sign_Accuracy_PERCENT": float,
-        "Top_5_LSTM_Value_RMSE_PERCENT": float,
-
-        "Top_1_CNN1D_LSTM_Sign_Accuracy_PERCENT": float,
-        "Top_1_CNN1D_LSTM_Value_RMSE_PERCENT": float,
-        "Top_5_CNN1D_LSTM_Sign_Accuracy_PERCENT": float,
-        "Top_5_CNN1D_LSTM_Value_RMSE_PERCENT": float,
-
         "Top_1_RF_Sign_Accuracy_PERCENT": float,
-        "Top_1_RF_Value_RMSE_PERCENT": float,
         "Top_5_RF_Sign_Accuracy_PERCENT": float,
-        "Top_5_RF_Value_RMSE_PERCENT": float,
-
         "Top_1_GT_Sign_Accuracy_PERCENT": float,
-        "Top_1_GT_Value_RMSE_PERCENT": float,
         "Top_5_GT_Sign_Accuracy_PERCENT": float,
-        "Top_5_GT_Value_RMSE_PERCENT": float,
-
+        "Top_1_GRNN_Sign_Accuracy_PERCENT": float,
+        "Top_5_GRNN_Sign_Accuracy_PERCENT": float,
+        "Top_1_CNN1D_Sign_Accuracy_PERCENT": float,
+        "Top_5_CNN1D_Sign_Accuracy_PERCENT": float,
+        "Top_1_LSTM_Sign_Accuracy_PERCENT": float,
+        "Top_5_LSTM_Sign_Accuracy_PERCENT": float,
+        "Top_1_CNN1D_LSTM_Sign_Accuracy_PERCENT": float,
+        "Top_5_CNN1D_LSTM_Sign_Accuracy_PERCENT": float,
+        "Top_1_Transformer_Sign_Accuracy_PERCENT": float,
+        "Top_5_Transformer_Sign_Accuracy_PERCENT": float,
         "Top_1_Combined_Sign_Accuracy_PERCENT": float,
-        "Top_1_Combined_Value_RMSE_PERCENT": float,
         "Top_5_Combined_Sign_Accuracy_PERCENT": float,
-        "Top_5_Combined_Value_RMSE_PERCENT": float,
+
+        "Top_1_RF_Value_MPE_PERCENT": float,
+        "Top_5_RF_Value_MPE_PERCENT": float,
+        "Top_1_GT_Value_MPE_PERCENT": float,
+        "Top_5_GT_Value_MPE_PERCENT": float,
+        "Top_1_GRNN_Value_MPE_PERCENT": float,
+        "Top_5_GRNN_Value_MPE_PERCENT": float,
+        "Top_1_CNN1D_Value_MPE_PERCENT": float,
+        "Top_5_CNN1D_Value_MPE_PERCENT": float,
+        "Top_1_LSTM_Value_MPE_PERCENT": float,
+        "Top_5_LSTM_Value_MPE_PERCENT": float,
+        "Top_1_CNN1D_LSTM_Value_MPE_PERCENT": float,
+        "Top_5_CNN1D_LSTM_Value_MPE_PERCENT": float,
+        "Top_1_Transformer_Value_MPE_PERCENT": float,
+        "Top_5_Transformer_Value_MPE_PERCENT": float,
+        "Top_1_Combined_Value_MPE_PERCENT": float,
+        "Top_5_Combined_Value_MPE_PERCENT": float,
 
     }
 
