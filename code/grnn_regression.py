@@ -254,23 +254,31 @@ def grnn_regression_predict(X, gpu_available, ticker_symbol, no=1):
     with open(trained_model_params_path, 'r') as f:
         model_params = json.load(f)
 
-    X = X.to_numpy()
+    # Convert directly to tensors
+    X = torch.tensor(X.values, dtype=torch.float32)
     input_size = X.shape[1]
 
     model = GRNN(input_size, 1, model_params['sigma'], classification=False).to(device)
 
-    # Load the model state dict with strict=False to ignore mismatched layers
+    # Load the model state dict
     model.load_state_dict(torch.load(trained_model_path, map_location=device, weights_only=True), strict=False)
     model.eval()  # Set the model to evaluation mode
 
-    input_tensor = torch.tensor(X, dtype=torch.float32).to(device)
+    input_tensor = X.to(device)
 
+    # Create a DataLoader for batch processing
+    data_loader = DataLoader(TensorDataset(input_tensor), batch_size=model_params['batch_size'], shuffle=False)
+
+    preds_list = []
     with torch.no_grad():  # Disable gradient calculation
-        preds = model(input_tensor)
+        for batch in data_loader:
+            batch = batch[0].to(device)  # Get the input tensor from the batch
+            preds = model(batch)
+            preds_list.append(preds.cpu().numpy())
 
-    # Convert predictions to a DataFrame
-    preds = preds.squeeze().cpu()
-    preds_numpy = preds.numpy()
+    # Concatenate all predictions
+    preds_numpy = np.concatenate(preds_list, axis=0)
     preds_df = pd.DataFrame(preds_numpy, columns=['Prediction'])
 
     return preds_df
+

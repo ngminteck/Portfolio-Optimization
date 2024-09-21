@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import root_mean_squared_error
 import numpy as np
 import shutil
+from torch.utils.data import DataLoader, TensorDataset
 
 from directory_manager import *
 from optuna_config import *
@@ -16,9 +17,9 @@ Model_Type = "conv1d_regression"
 def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
 
-    X = X.to_numpy()
-    y = y.to_numpy().reshape(-1, 1)
-    X = X.reshape((X.shape[0], 1, -1))
+    # Convert directly to tensors
+    X = torch.tensor(X.values, dtype=torch.float32).reshape((X.shape[0], 1, -1))
+    y = torch.tensor(y.values.reshape(-1, 1), dtype=torch.float32)
 
     # Split data into training and validation sets
     TEST_SIZE = 0.2
@@ -26,7 +27,6 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE)
 
     def conv1d_regression_objective(trial):
-
         in_channels = X_train.shape[1]
         out_channels = trial.suggest_int('out_channels', 16, 128)
         kernel_size = trial.suggest_int('kernel_size', 3, 7)
@@ -34,56 +34,60 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
         l2_lambda = trial.suggest_float('l2_lambda', 1e-5, 1e-2)
         dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
         lr = trial.suggest_float('lr', 1e-5, 1e-1)
+        batch_size = trial.suggest_int('batch_size', 16, 256)
         epochs = 1000
         patience = 10
 
-        model = Conv1DModel(in_channels, out_channels, kernel_size, num_blocks, l2_lambda, dropout_rate,
-                            classification=False).to(device)
+        model = Conv1DModel(in_channels, out_channels, kernel_size, num_blocks, l2_lambda, dropout_rate, classification=False).to(device)
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=l2_lambda)
         criterion = nn.MSELoss()
 
         best_val_rmse = np.inf
         epochs_no_improve = 0
 
-        input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-        target_train = torch.tensor(y_train, dtype=torch.float32).to(device)
-
-        input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-        target_val = torch.tensor(y_val, dtype=torch.float32).to(device)
+        train_loader = DataLoader(TensorDataset(X_train, y_train), batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(TensorDataset(X_val, y_val), batch_size=batch_size, shuffle=False)
 
         for epoch in range(epochs):
             model.train()
-            optimizer.zero_grad()
-            output = model(input_train)
-            loss = criterion(output, target_train)
-            loss.backward()
-            optimizer.step()
+            for input_train, target_train in train_loader:
+                input_train, target_train = input_train.to(device), target_train.to(device)
+                optimizer.zero_grad()
+                output = model(input_train)
+                loss = criterion(output, target_train)
+                loss.backward()
+                optimizer.step()
 
             model.eval()
+            val_rmse = 0
             with torch.no_grad():
-                val_output = model(input_val)
-                val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
+                for input_val, target_val in val_loader:
+                    input_val, target_val = input_val.to(device), target_val.to(device)
+                    val_output = model(input_val)
+                    val_rmse += root_mean_squared_error(target_val.cpu(), val_output.cpu()).item()
 
-                # Report intermediate objective value
-                trial.report(val_rmse, epoch)
+            val_rmse /= len(val_loader)
 
-                # Prune unpromising trials
-                if trial.should_prune():
-                    raise optuna.TrialPruned()
+            # Report intermediate objective value
+            trial.report(val_rmse, epoch)
 
-                if val_rmse < best_val_rmse:
-                    best_val_rmse = val_rmse
-                    epochs_no_improve = 0
-                else:
-                    epochs_no_improve += 1
+            # Prune unpromising trials
+            if trial.should_prune():
+                raise optuna.TrialPruned()
 
-                if epochs_no_improve >= patience:
-                    break
+            if val_rmse < best_val_rmse:
+                best_val_rmse = val_rmse
+                epochs_no_improve = 0
+            else:
+                epochs_no_improve += 1
+
+            if epochs_no_improve >= patience:
+                break
 
         return best_val_rmse
 
     study = optuna.create_study(direction='minimize', pruner=optuna.pruners.MedianPruner())
-    study.optimize(conv1d_regression_objective,  n_trials=MAX_TRIALS)
+    study.optimize(conv1d_regression_objective, n_trials=MAX_TRIALS)
 
     # Get all trials
     all_trials = study.trials
@@ -146,33 +150,37 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
             best_val_rmse = np.inf
             epochs_no_improve = 0
 
-            input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-            target_train = torch.tensor(y_train, dtype=torch.float32).to(device)
-
-            input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-            target_val = torch.tensor(y_val, dtype=torch.float32).to(device)
+            train_loader = DataLoader(TensorDataset(X_train, y_train), batch_size=trial_params['batch_size'], shuffle=True)
+            val_loader = DataLoader(TensorDataset(X_val, y_val), batch_size=trial_params['batch_size'], shuffle=False)
 
             for epoch in range(epochs):
                 model.train()
-                optimizer.zero_grad()
-                output = model(input_train)
-                loss = criterion(output, target_train)
-                loss.backward()
-                optimizer.step()
+                for input_train, target_train in train_loader:
+                    input_train, target_train = input_train.to(device), target_train.to(device)
+                    optimizer.zero_grad()
+                    output = model(input_train)
+                    loss = criterion(output, target_train)
+                    loss.backward()
+                    optimizer.step()
 
                 model.eval()
+                val_rmse = 0
                 with torch.no_grad():
-                    val_output = model(input_val)
-                    val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
+                    for input_val, target_val in val_loader:
+                        input_val, target_val = input_val.to(device), target_val.to(device)
+                        val_output = model(input_val)
+                        val_rmse += root_mean_squared_error(target_val.cpu(), val_output.cpu()).item()
 
-                    if val_rmse < best_val_rmse:
-                        best_val_rmse = val_rmse
-                        epochs_no_improve = 0
-                    else:
-                        epochs_no_improve += 1
+                val_rmse /= len(val_loader)
 
-                    if epochs_no_improve >= patience:
-                        break
+                if val_rmse < best_val_rmse:
+                    best_val_rmse = val_rmse
+                    epochs_no_improve = 0
+                else:
+                    epochs_no_improve += 1
+
+                if epochs_no_improve >= patience:
+                    break
 
             # Save the new model from trial
             torch.save(model.state_dict(), new_model_path)
@@ -247,35 +255,41 @@ def conv1d_regression_predict(X, gpu_available, ticker_symbol, no=1):
     with open(trained_model_params_path, 'r') as f:
         model_params = json.load(f)
 
-    X = X.to_numpy()
-    X = X.reshape((X.shape[0], 1, -1))
+    # Convert directly to tensors
+    X = torch.tensor(X.values, dtype=torch.float32).reshape((X.shape[0], 1, -1))
     in_channels = X.shape[1]
     out_channels = model_params['out_channels']
     kernel_size = model_params['kernel_size']
     num_blocks = model_params['num_blocks']
     l2_lambda = model_params['l2_lambda']
     dropout_rate = model_params['dropout_rate']
+    batch_size = model_params['batch_size']
 
     # Initialize the model with the loaded parameters
-    model = Conv1DModel(in_channels, out_channels, kernel_size, num_blocks, l2_lambda, dropout_rate,
-                        classification=False).to(device)
+    model = Conv1DModel(in_channels, out_channels, kernel_size, num_blocks, l2_lambda, dropout_rate, classification=False).to(device)
 
-    # Load the model state dict with strict=False to ignore mismatched layers
+    # Load the model state dict
     model.load_state_dict(torch.load(trained_model_path, map_location=device, weights_only=True), strict=False)
     model.eval()  # Set the model to evaluation mode
 
-    input_tensor = torch.tensor(X, dtype=torch.float32).to(device)
+    input_tensor = X.to(device)
 
     # Ensure the input tensor shape matches the model's expected input shape
     if input_tensor.ndimension() == 2:
         input_tensor = input_tensor.unsqueeze(0)  # Add batch dimension if missing
 
-    with torch.no_grad():  # Disable gradient calculation
-        preds = model(input_tensor)
+    # Create a DataLoader for batch processing
+    data_loader = DataLoader(TensorDataset(input_tensor), batch_size=batch_size, shuffle=False)
 
-    # Convert predictions to a DataFrame
-    preds = preds.squeeze().cpu()
-    preds_numpy = preds.numpy()
+    preds_list = []
+    with torch.no_grad():  # Disable gradient calculation
+        for batch in data_loader:
+            batch = batch[0].to(device)  # Get the input tensor from the batch
+            preds = model(batch)
+            preds_list.append(preds.cpu().numpy())
+
+    # Concatenate all predictions
+    preds_numpy = np.concatenate(preds_list, axis=0)
     preds_df = pd.DataFrame(preds_numpy, columns=['Prediction'])
 
     return preds_df

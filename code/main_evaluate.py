@@ -508,6 +508,8 @@ def main_evaluate():
 
         print(f"{ticker_symbol} done evaluate.")
 
+        break
+
 
 
 

@@ -73,6 +73,8 @@ def main_training(classification = False):
 
         print(f"{ticker_symbol} done training.")
 
+        break
+
 
 
 
