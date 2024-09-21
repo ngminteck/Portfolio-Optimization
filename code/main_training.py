@@ -37,7 +37,7 @@ def main_training(classification = False):
 
     print(xgboost.build_info())
 
-    path = '../data/train'
+    path = '../data/all'
 
     ticker_list = []
 
@@ -45,7 +45,7 @@ def main_training(classification = False):
         ticker_list = [os.path.splitext(f)[0] for f in os.listdir(path) if f.endswith('.csv')]
 
     for ticker_symbol in ticker_list:
-        df = pd.read_csv(f"../data/train/{ticker_symbol}.csv")
+        df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
 
         X, y_classifier, y_regressor = training_preprocess_data(df)
 
@@ -61,7 +61,7 @@ def main_training(classification = False):
         conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
         lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
         conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-        transformer_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+        #transformer_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
         if classification:
             xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol)
@@ -73,7 +73,7 @@ def main_training(classification = False):
 
         print(f"{ticker_symbol} done training.")
 
-        break
+
 
 
 

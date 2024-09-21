@@ -111,8 +111,7 @@ def main_data_collection():
         print(f"Fetching {ticker_symbol} news sentiment was successfully")
         df = set_target(df)
         print(f"{ticker_symbol} set target successfully")
-        cut_off_date = datetime.today() - timedelta(days=3 * 365)
+        cut_off_date = datetime.today() - timedelta(days=2 * 365)
         split_train_and_test_data_and_save(df, cut_off_date, ticker_symbol)
         print(f"{ticker_symbol} save successfully")
 
-#main_data_collection()

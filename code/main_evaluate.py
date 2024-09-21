@@ -11,14 +11,16 @@ from cov1d_lstm_regression import *
 
 
 def mean_percentage_error(y_true, y_pred):
-    return 100 * np.mean((y_pred - y_true) / y_true)
+    # Avoid division by zero by replacing zeros with a small number (epsilon)
+    epsilon = 1e-10
+    y_true = np.where(y_true == 0, epsilon, y_true)
+    return np.mean((y_true - y_pred) / y_true) * 100
 
 def evaluate_model_mertric(original_df, ticker_symbol):
     original_df = original_df.iloc[:-1, :]
 
     actual_signs = np.sign(original_df['DAILY_MIDPRICE_CHANGE'].diff().fillna(0))
     actual_values = original_df['DAILY_MIDPRICE_CHANGE']
-    actual_values_mean = actual_values.mean()
 
     ticker_df = load_or_create_ticker_metric_df('../result/ticker_metrics.csv')
     if ticker_symbol not in ticker_df['Ticker_Symbol'].values:
@@ -172,7 +174,7 @@ def main_evaluate():
     print(f"GPU available: {gpu_available}")
     print(xgboost.build_info())
 
-    path = '../data/train'
+    path = '../data/all'
     ticker_list = []
     if os.path.exists(path):
         ticker_list = [os.path.splitext(f)[0] for f in os.listdir(path) if f.endswith('.csv')]

@@ -1,0 +1,1 @@
+{"out_channels": 104, "kernel_size": 3, "num_blocks": 2, "lstm_hidden_size": 68, "l2_lambda": 0.000449366137125103, "dropout_rate": 0.15177301174187072, "lr": 0.05151193525324454}
