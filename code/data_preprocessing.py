@@ -1,200 +1,223 @@
 import numpy as np
-import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from directory_manager import *
 
 '''
-0: Date
-1: Open
-2: High
-3: Low
-4: Close
-5: Volume
-6: Change
-7: Wave
-8: Prev. Day Open Interest
-9: EFP Volume
-10: EFS Volume
-11: Block Volume
-12: Last
-13: Previous Day Open Interest
-14: BB_UPPER
-15: BB_MIDDLE
-16: BB_LOWER
-17: DEMA
-18: EMA
-19: HT_TRENDLINE
-20: KAMA
-21: MA
-22: MAMA
-23: FAMA
-24: MAVP
-25: MIDPOINT
-26: MIDPRICE
-27: SAR
-28: SAREXT
-29: SMA
-30: T3
-31: TEMA
-32: TRIMA
-33: WMA
-34: ADX
-35: ADXR
-36: APO
-37: AROON_down
-38: AROON_up
-39: AROONOSC
-40: BOP
-41: CCI
-42: CMO
-43: DX
-44: MACD
-45: MACD_signal
-46: MACD_hist
-47: MACDEXT
-48: MACDEXT_signal
-49: MACDEXT_hist
-50: MACDFIX
-51: MACDFIX_signal
-52: MACDFIX_hist
-53: MFI
-54: MINUS_DI
-55: MINUS_DM
-56: MOM
-57: PLUS_DI
-58: PLUS_DM
-59: PPO
-60: ROC
-61: ROCP
-62: ROCR
-63: ROCR100
-64: RSI
-65: STOCH_slowk
-66: STOCH_slowd
-67: STOCHF_fastk
-68: STOCHF_fastd
-69: STOCHRSI_fastk
-70: STOCHRSI_fastd
-71: TRIX
-72: ULTOSC
-73: WILLR
-74: AD
-75: ADOSC
-76: OBV
-77: ATR
-78: NATR
-79: TRANGE
-80: HT_DCPERIOD
-81: HT_DCPHASE
-82: HT_PHASOR_inphase
-83: HT_PHASOR_quadrature
-84: HT_SINE_sine
-85: HT_SINE_leadsine
-86: HT_TRENDMODE
-87: AVGPRICE
-88: MEDPRICE
-89: TYPPRICE
-90: WCLPRICE
-91: BETA
-92: CORREL
-93: LINEARREG
-94: LINEARREG_ANGLE
-95: LINEARREG_INTERCEPT
-96: LINEARREG_SLOPE
-97: STDDEV
-98: TSF
-99: VAR
-100: DEMA_Trend
-101: EMA_Trend
-102: HT_TRENDLINE_Trend
-103: KAMA_Trend
-104: MA_Trend
-105: MAMA_Trend
-106: MAVP_Trend
-107: MIDPOINT_Trend
-108: MIDPRICE_Trend
-109: SAR_Trend
-110: SAREXT_Trend
-111: SMA_Trend
-112: T3_Trend
-113: TEMA_Trend
-114: TRIMA_Trend
-115: WMA_Trend
-116: ADX_Trend
-117: ADXR_Trend
-118: AROONOSC_Trend
-119: DX_Trend
-120: TRIX_Trend
-121: DMI_Trend
-122: AROON_Up_Trend
-123: AROON_Down_Trend
-124: PM_Uptrend
-125: PM_Downtrend
-126: ROC_Trend
-127: ROCP_Trend
-128: ROCR_Trend
-129: ROCR100_Trend
-130: ROC_Buy_Sell_Signal
-131: ROCP_Buy_Sell_Signal
-132: ROCR_Buy_Sell_Signal
-133: ROCR100_Buy_Sell_Signal
-134: APO_Buy_Sell_Signal
-135: MACD_Buy_Sell_Signal
-136: MACDEXT_Buy_Sell_Signal
-137: MACDFIX_Buy_Sell_Signal
-138: PPO_Buy_Sell_Signal
-139: MOM_Buy_Sell_Signal
-140: STOCH_Buy_Sell_Signal
-141: STOCHF_Buy_Sell_Signal
-142: STOCHRSI_Buy_Sell_Signal
-143: ULTOSC_Buy_Sell_Signal
-144: WILLR_Buy_Sell_Signal
-145: BOP_Buy_Sell_Pressure
-146: MFI_Buy_Sell_Pressure
-147: AD_Buy_Sell_Pressure
-148: ADOSC_Buy_Sell_Pressure
-149: OBV_Buy_Sell_Pressure
-150: BB_Overbought_Oversold_Signal
-151: CCI_Overbought_Oversold_Signal
-152: RSI_Overbought_Oversold_Signal
-153: STOCH_Overbought_Oversold_Signal
-154: STOCHF_Overbought_Oversold_Signal
-155: STOCHRSI_Overbought_Oversold_Signal
-156: ULTOSC_Overbought_Oversold_Signal
-157: WILLR_Overbought_Oversold_Signal
-158: BB_RSI_Reversal
-159: BB_Volatility
-160: ATR_Volatility
-161: NATR_Volatility
-162: TRANGE_Volatility
-163: PATTERN_SUM
-164: SENTIMENT_NEGATIVE
-165: SENTIMENT_POSITIVE
-166: SENTIMENT_UNCERTAINTY
-167: SENTIMENT_LITIGIOUS
-168: SENTIMENT_STRONG_MODAL
-169: SENTIMENT_WEAK_MODAL
-170: SENTIMENT_CONSTRAINING
-171: NEXT_DAY_CLOSEPRICE
-172: DAILY_CLOSEPRICE_CHANGE
-173: DAILY_CLOSEPRICE_CHANGE_PERCENT
-174: DAILY_CLOSEPRICE_DIRECTION
-175: DAILY_MIDPRICE
-176: NEXT_DAY_MIDPRICE
-177: DAILY_MIDPRICE_CHANGE
-178: DAILY_MIDPRICE_CHANGE_PERCENT
-179: DAILY_MIDPRICE_DIRECTION
+0 : Date
+1 : Open
+2 : High
+3 : Low
+4 : Close
+5 : Volume
+6 : Change
+7 : Wave
+8 : EFP Volume
+9 : EFS Volume
+10 : Block Volume
+11 : Last
+12 : Previous Day Open Interest
+13 : BB_UPPER
+14 : BB_MIDDLE
+15 : BB_LOWER
+16 : DEMA
+17 : EMA
+18 : HT_TRENDLINE
+19 : KAMA
+20 : MA
+21 : MAMA
+22 : FAMA
+23 : MAVP
+24 : MIDPOINT
+25 : MIDPRICE
+26 : SAR
+27 : SAREXT
+28 : SMA
+29 : T3
+30 : TEMA
+31 : TRIMA
+32 : WMA
+33 : APO
+34 : CCI
+35 : MACD
+36 : MACD_signal
+37 : MACD_hist
+38 : MACDEXT
+39 : MACDEXT_signal
+40 : MACDEXT_hist
+41 : MACDFIX
+42 : MACDFIX_signal
+43 : MACDFIX_hist
+44 : MINUS_DM
+45 : MOM
+46 : PLUS_DM
+47 : PPO
+48 : ROC
+49 : ROCP
+50 : ROCR
+51 : ROCR100
+52 : TRIX
+53 : AD
+54 : ADOSC
+55 : OBV
+56 : ATR
+57 : NATR
+58 : TRANGE
+59 : HT_DCPERIOD
+60 : HT_DCPHASE
+61 : HT_PHASOR_inphase
+62 : HT_PHASOR_quadrature
+63 : HT_SINE_sine
+64 : HT_SINE_leadsine
+65 : AVGPRICE
+66 : MEDPRICE
+67 : TYPPRICE
+68 : WCLPRICE
+69 : BETA
+70 : LINEARREG
+71 : LINEARREG_ANGLE
+72 : LINEARREG_INTERCEPT
+73 : LINEARREG_SLOPE
+74 : STDDEV
+75 : TSF
+76 : VAR
+77 : ADX
+78 : ADXR
+79 : AROON_down
+80 : AROON_up
+81 : AROONOSC
+82 : CMO
+83 : DX
+84 : MFI
+85 : MINUS_DI
+86 : PLUS_DI
+87 : RSI
+88 : STOCH_slowk
+89 : STOCH_slowd
+90 : STOCHF_fastk
+91 : STOCHF_fastd
+92 : STOCHRSI_fastk
+93 : STOCHRSI_fastd
+94 : ULTOSC
+95 : WILLR
+96 : BOP
+97 : HT_TRENDMODE
+98 : CORREL
+99 : DEMA_Trend
+100 : EMA_Trend
+101 : HT_TRENDLINE_Trend
+102 : KAMA_Trend
+103 : MA_Trend
+104 : MAMA_Trend
+105 : MAVP_Trend
+106 : MIDPOINT_Trend
+107 : MIDPRICE_Trend
+108 : SAR_Trend
+109 : SAREXT_Trend
+110 : SMA_Trend
+111 : T3_Trend
+112 : TEMA_Trend
+113 : TRIMA_Trend
+114 : WMA_Trend
+115 : ADX_Trend
+116 : ADXR_Trend
+117 : AROONOSC_Trend
+118 : DX_Trend
+119 : TRIX_Trend
+120 : DMI_Trend
+121 : AROON_Up_Trend
+122 : AROON_Down_Trend
+123 : PM_Uptrend
+124 : PM_Downtrend
+125 : ROC_Trend
+126 : ROCP_Trend
+127 : ROCR_Trend
+128 : ROCR100_Trend
+129 : ROC_Buy_Sell_Signal
+130 : ROCP_Buy_Sell_Signal
+131 : ROCR_Buy_Sell_Signal
+132 : ROCR100_Buy_Sell_Signal
+133 : APO_Buy_Sell_Signal
+134 : MACD_Buy_Sell_Signal
+135 : MACDEXT_Buy_Sell_Signal
+136 : MACDFIX_Buy_Sell_Signal
+137 : PPO_Buy_Sell_Signal
+138 : MOM_Buy_Sell_Signal
+139 : STOCH_Buy_Sell_Signal
+140 : STOCHF_Buy_Sell_Signal
+141 : STOCHRSI_Buy_Sell_Signal
+142 : ULTOSC_Buy_Sell_Signal
+143 : WILLR_Buy_Sell_Signal
+144 : BOP_Buy_Sell_Pressure
+145 : MFI_Buy_Sell_Pressure
+146 : AD_Buy_Sell_Pressure
+147 : ADOSC_Buy_Sell_Pressure
+148 : OBV_Buy_Sell_Pressure
+149 : BB_Overbought_Oversold_Signal
+150 : CCI_Overbought_Oversold_Signal
+151 : RSI_Overbought_Oversold_Signal
+152 : STOCH_Overbought_Oversold_Signal
+153 : STOCHF_Overbought_Oversold_Signal
+154 : STOCHRSI_Overbought_Oversold_Signal
+155 : ULTOSC_Overbought_Oversold_Signal
+156 : WILLR_Overbought_Oversold_Signal
+157 : BB_RSI_Reversal
+158 : BB_Volatility
+159 : ATR_Volatility
+160 : NATR_Volatility
+161 : TRANGE_Volatility
+162 : PATTERN_SUM
+163 : SENTIMENT_NEGATIVE
+164 : SENTIMENT_POSITIVE
+165 : SENTIMENT_UNCERTAINTY
+166 : SENTIMENT_LITIGIOUS
+167 : SENTIMENT_STRONG_MODAL
+168 : SENTIMENT_WEAK_MODAL
+169 : SENTIMENT_CONSTRAINING
+170 : NEXT_DAY_CLOSEPRICE
+171 : DAILY_CLOSEPRICE_CHANGE
+172 : DAILY_CLOSEPRICE_CHANGE_PERCENT
+173 : DAILY_CLOSEPRICE_DIRECTION
+174 : DAILY_MIDPRICE
+175 : NEXT_DAY_MIDPRICE
+176 : DAILY_MIDPRICE_CHANGE
+177 : DAILY_MIDPRICE_CHANGE_PERCENT
+178 : DAILY_MIDPRICE_DIRECTION
 '''
 
-def training_preprocess_data(df):
+standard_scaled_columns = [
+    "Open", "High", "Low", "Close", "Volume", "Change", "Wave", "EFP Volume", "EFS Volume",
+    "Block Volume", "Last", "Previous Day Open Interest", "BB_UPPER", "BB_MIDDLE", "BB_LOWER",
+    "DEMA", "EMA", "HT_TRENDLINE", "KAMA", "MA", "MAMA", "FAMA", "MAVP", "MIDPOINT", "MIDPRICE",
+    "SAR", "SAREXT", "SMA", "T3", "TEMA", "TRIMA", "WMA", "APO", "CCI", "MACD", "MACD_signal",
+    "MACD_hist", "MACDEXT", "MACDEXT_signal", "MACDEXT_hist", "MACDFIX", "MACDFIX_signal",
+    "MACDFIX_hist", "MINUS_DM", "MOM", "PLUS_DM", "PPO", "ROC", "ROCP", "ROCR", "ROCR100",
+    "TRIX", "AD", "ADOSC", "OBV", "ATR", "NATR", "TRANGE", "HT_DCPERIOD", "HT_DCPHASE",
+    "HT_PHASOR_inphase", "HT_PHASOR_quadrature", "HT_SINE_sine", "HT_SINE_leadsine", "AVGPRICE",
+    "MEDPRICE", "TYPPRICE", "WCLPRICE", "BETA", "LINEARREG", "LINEARREG_ANGLE", "LINEARREG_INTERCEPT",
+    "LINEARREG_SLOPE", "STDDEV", "TSF", "VAR"
+]
+
+division_hundred_columns = [
+    "ADX", "ADXR", "AROON_down", "AROON_up", "AROONOSC", "CMO", "DX", "MFI", "MINUS_DI",
+    "PLUS_DI", "RSI", "STOCH_slowk", "STOCH_slowd", "STOCHF_fastk", "STOCHF_fastd",
+    "STOCHRSI_fastk", "STOCHRSI_fastd", "ULTOSC", "WILLR"
+]
+
+def training_preprocess_data(ticker_symbol):
+
+    df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
     # Handle missing and infinite values
     if df.isna().sum().sum() > 0 or df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
         df = df.replace([float('inf'), float('-inf')], np.nan).dropna()
 
     # Create target variables before dropping columns
-    y_classifier = (np.sign(df['DAILY_MIDPRICE_CHANGE']) >= 0).astype(int)
+    y_classifier = (np.sign(df['DAILY_CLOSEPRICE_CHANGE']) >= 0).astype(int)
     y_scaler = StandardScaler()
-    y_regressor = df[['DAILY_MIDPRICE_CHANGE']]  # Convert to DataFrame
+    y_regressor = df[['DAILY_CLOSEPRICE_CHANGE']]  # Convert to DataFrame
     y_regressor_scaled = pd.DataFrame(y_scaler.fit_transform(y_regressor), columns=y_regressor.columns)
+
+    #for index, column in enumerate(df.columns):
+     #   print(f"{index} : {column}")
 
     # Copy the DataFrame for feature processing
     X = df.copy(deep=True)
@@ -210,15 +233,28 @@ def training_preprocess_data(df):
     X = X.drop(columns=columns_to_drop)
 
     # Drop additional columns by index range if needed
-    X = X.drop(X.columns[100:163], axis=1)
+    X = X.drop(X.columns[99:162], axis=1)
 
-    # Standardize the features
+    # Drop columns with only one unique value
+    X = X.loc[:, X.nunique() > 1]
+
+    columns_to_divide_by_100 = [col for col in division_hundred_columns if col in X.columns]
+    X[columns_to_divide_by_100] = X[columns_to_divide_by_100] / 100
+
+    columns_to_standard_scale = [col for col in standard_scaled_columns if col in X.columns]
     X_scaler = StandardScaler()
-    X_scaled = pd.DataFrame(X_scaler.fit_transform(X), columns=X.columns)
+    X[columns_to_standard_scale] = X_scaler.fit_transform(X[columns_to_standard_scale])
 
-    return X_scaled, y_classifier, y_regressor_scaled
+    file = f'{Trained_Feature_Folder}{ticker_symbol}.txt'
+    with open(file, 'w') as f:
+        for col in X.columns:
+            f.write(col + '\n')
 
-def predict_preprocess_data(df):
+    return X, y_classifier, y_regressor_scaled
+
+def predict_preprocess_data(ticker_symbol):
+    df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
+
     # Select the last row and make a deep copy
     last_row_copy = df.iloc[-1].copy(deep=True)
 
@@ -234,29 +270,24 @@ def predict_preprocess_data(df):
 
     # Scale the target variable
     y_scaler = StandardScaler()
-    y_regressor = df[['DAILY_MIDPRICE_CHANGE']]  # Convert to DataFrame
+    y_regressor = df[['DAILY_CLOSEPRICE_CHANGE']]  # Convert to DataFrame
     y_regressor_scaled = pd.DataFrame(y_scaler.fit_transform(y_regressor), columns=y_regressor.columns)
 
-    # Make a deep copy of the DataFrame for features
-    X = df.copy(deep=True)
+    trained_X_feature = []
+    file = f'{Trained_Feature_Folder}{ticker_symbol}.txt'
+    with open(file, 'r') as f:
+        column_names = f.read().splitlines()
+        trained_X_feature.append(column_names)
 
-    # Drop specific columns by name
-    columns_to_drop = [
-        'NEXT_DAY_CLOSEPRICE', 'DAILY_CLOSEPRICE_CHANGE', 'DAILY_CLOSEPRICE_CHANGE_PERCENT',
-        'DAILY_CLOSEPRICE_DIRECTION',
-        'DAILY_MIDPRICE', 'NEXT_DAY_MIDPRICE', 'DAILY_MIDPRICE_CHANGE', 'DAILY_MIDPRICE_CHANGE_PERCENT',
-        'DAILY_MIDPRICE_DIRECTION',
-        'Date',
-    ]
-    X = X.drop(columns=columns_to_drop)
+    X = df.filter(trained_X_feature).copy()
 
-    # Drop additional columns by index range if needed
-    X = X.drop(X.columns[100:163], axis=1)
+    columns_to_divide_by_100 = [col for col in division_hundred_columns if col in X.columns]
+    X[columns_to_divide_by_100] = X[columns_to_divide_by_100] / 100
 
-    # Scale the features
+    columns_to_standard_scale = [col for col in standard_scaled_columns if col in X.columns]
     X_scaler = StandardScaler()
-    X_scaled = pd.DataFrame(X_scaler.fit_transform(X), columns=X.columns)
+    X[columns_to_standard_scale] = X_scaler.fit_transform(X[columns_to_standard_scale])
 
-    return X_scaled, y_scaler
+    return X, y_scaler
 
 

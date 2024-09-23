@@ -78,50 +78,18 @@ def get_technical_indicator(df):
 
     # Momentum Indicators
 
-    # Average Directional Movement Index: Measures trend strength
-    df['ADX'] = talib.ADX(df['High'], df['Low'], df['Close'], timeperiod=14)
-    # Value range: [0, 100]
-    # Example: Higher ADX values indicate a stronger trend. Values above 25 suggest a strong trend.
-
-    # Average Directional Movement Index Rating: Measures trend strength
-    df['ADXR'] = talib.ADXR(df['High'], df['Low'], df['Close'], timeperiod=14)
-    # Value range: [0, 100]
-    # Example: Higher ADXR values indicate a stronger trend. Values above 25 suggest a strong trend.
 
     # Absolute Price Oscillator: Measures momentum
     df['APO'] = talib.APO(df['Close'], fastperiod=12, slowperiod=26, matype=0)
     # Value range: [negative infinity, positive infinity]
     # Example: Positive APO values indicate upward momentum. Negative APO values indicate downward momentum.
 
-    # Aroon: Identifies trend changes
-    df['AROON_down'], df['AROON_up'] = talib.AROON(df['High'], df['Low'], timeperiod=14)
-    # Value range: [0, 100]
-    # Example: Higher AROON_up values indicate a stronger uptrend. Higher AROON_down values indicate a stronger downtrend.
-
-    # Aroon Oscillator: Measures trend strength
-    df['AROONOSC'] = talib.AROONOSC(df['High'], df['Low'], timeperiod=14)
-    # Value range: [-100, 100]
-    # Example: Positive AROONOSC values indicate upward momentum. Negative AROONOSC values indicate downward momentum.
-
-    # Balance Of Power: Measures buying and selling pressure
-    df['BOP'] = talib.BOP(df['Open'], df['High'], df['Low'], df['Close'])
-    # Value range: [-1, 1]
-    # Example: Positive BOP values indicate buying pressure. Negative BOP values indicate selling pressure.
 
     # Commodity Channel Index: Identifies cyclical trends
     df['CCI'] = talib.CCI(df['High'], df['Low'], df['Close'], timeperiod=14)
     # Value range: [negative infinity, positive infinity]
     # Example: CCI values above 100 indicate overbought conditions. CCI values below -100 indicate oversold conditions.
 
-    # Chande Momentum Oscillator: Measures momentum
-    df['CMO'] = talib.CMO(df['Close'], timeperiod=14)
-    # Value range: [-100, 100]
-    # Example: Positive CMO values indicate upward momentum. Negative CMO values indicate downward momentum.
-
-    # Directional Movement Index: Measures trend strength
-    df['DX'] = talib.DX(df['High'], df['Low'], df['Close'], timeperiod=14)
-    # Value range: [0, 100]
-    # Example: Higher DX values indicate a stronger trend. Values above 25 suggest a strong trend.
 
     # Moving Average Convergence/Divergence: Measures momentum
     df['MACD'], df['MACD_signal'], df['MACD_hist'] = talib.MACD(df['Close'], fastperiod=12, slowperiod=26, signalperiod=9)
@@ -138,16 +106,6 @@ def get_technical_indicator(df):
     # Value range: [negative infinity, positive infinity]
     # Example: Positive MACDFIX values indicate upward momentum. Negative MACDFIX values indicate downward momentum.
 
-    # Money Flow Index: Measures buying and selling pressure
-    df['MFI'] = talib.MFI(df['High'], df['Low'], df['Close'], df['Volume'], timeperiod=14)
-    # Value range: [0, 100]
-    # Example: MFI values above 80 indicate overbought conditions. MFI values below 20 indicate oversold conditions.
-
-    # Minus Directional Indicator: Measures trend strength
-    df['MINUS_DI'] = talib.MINUS_DI(df['High'], df['Low'], df['Close'], timeperiod=14)
-    # Value range: [0, 100]
-    # Example: Higher MINUS_DI values indicate a stronger downtrend.
-
     # Minus Directional Movement: Measures trend strength
     df['MINUS_DM'] = talib.MINUS_DM(df['High'], df['Low'], timeperiod=14)
     # Value range: [negative infinity, positive infinity]
@@ -157,11 +115,6 @@ def get_technical_indicator(df):
     df['MOM'] = talib.MOM(df['Close'], timeperiod=10)
     # Value range: [negative infinity, positive infinity]
     # Example: Positive MOM values indicate upward momentum. Negative MOM values indicate downward momentum.
-
-    # Plus Directional Indicator: Measures trend strength
-    df['PLUS_DI'] = talib.PLUS_DI(df['High'], df['Low'], df['Close'], timeperiod=14)
-    # Value range: [0, 100]
-    # Example: Higher PLUS_DI values indicate a stronger uptrend.
 
     # Plus Directional Movement: Measures trend strength
     df['PLUS_DM'] = talib.PLUS_DM(df['High'], df['Low'], timeperiod=14)
@@ -193,40 +146,12 @@ def get_technical_indicator(df):
     # Value range: [negative infinity, positive infinity]
     # Example: Positive ROCR100 values indicate upward momentum. Negative ROCR100 values indicate downward momentum.
 
-    # Relative Strength Index: Measures momentum
-    df['RSI'] = talib.RSI(df['Close'], timeperiod=14)
-    # Value range: [0, 100]
-    # Example: RSI values above 70 indicate overbought conditions (potential fall). RSI values below 30 indicate oversold conditions (potential rise).
-
-    # Stochastic: Measures momentum
-    df['STOCH_slowk'], df['STOCH_slowd'] = talib.STOCH(df['High'], df['Low'], df['Close'], fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
-    # Value range: [0, 100]
-    # Example: Stochastic values above 80 indicate overbought conditions (potential fall). Stochastic values below 20 indicate oversold conditions (potential rise).
-
-    # Stochastic Fast: Measures momentum
-    df['STOCHF_fastk'], df['STOCHF_fastd'] = talib.STOCHF(df['High'], df['Low'], df['Close'], fastk_period=14, fastd_period=3, fastd_matype=0)
-    # Value range: [0, 100]
-    # Example: Fast Stochastic values above 80 indicate overbought conditions (potential fall). Fast Stochastic values below 20 indicate oversold conditions (potential rise).
-
-    # Stochastic Relative Strength Index: Measures momentum
-    df['STOCHRSI_fastk'], df['STOCHRSI_fastd'] = talib.STOCHRSI(df['Close'], timeperiod=14, fastk_period=14, fastd_period=3, fastd_matype=0)
-    # Value range: [0, 100]
-    # Example: Stochastic RSI values above 80 indicate overbought conditions (potential fall). Stochastic RSI values below 20 indicate oversold conditions (potential rise).
-
     # TRIX: Measures rate of change of a triple smoothed EMA
     df['TRIX'] = talib.TRIX(df['Close'], timeperiod=30)
     # Value range: [negative infinity, positive infinity]
     # Example: Positive TRIX values indicate upward momentum. Negative TRIX values indicate downward momentum.
 
-    # Ultimate Oscillator: Measures momentum
-    df['ULTOSC'] = talib.ULTOSC(df['High'], df['Low'], df['Close'], timeperiod1=7, timeperiod2=14, timeperiod3=28)
-    # Value range: [0, 100]
-    # Example: ULTOSC values above 70 indicate overbought conditions (potential fall). ULTOSC values below 30 indicate oversold conditions (potential rise).
 
-    # Williams' %R: Measures overbought/oversold conditions
-    df['WILLR'] = talib.WILLR(df['High'], df['Low'], df['Close'], timeperiod=14)
-    # Value range: [-100, 0]
-    # Example: WILLR values above -20 indicate overbought conditions (potential fall). WILLR values below -80 indicate oversold conditions (potential rise).
 
     # Volume Indicators
 
@@ -284,10 +209,6 @@ def get_technical_indicator(df):
     # Value range: [negative infinity, positive infinity]
     # Example: Sine and leadsine values help identify turning points in the cycle.
 
-    # Hilbert Transform - Trend vs Cycle Mode: Identifies trend vs cycle mode
-    df['HT_TRENDMODE'] = talib.HT_TRENDMODE(df['Close'])
-    # Value range: [0, 1]
-    # Example: A value of 1 indicates a trending market. A value of 0 indicates a cyclical market.
 
     # Price Transform
 
@@ -318,10 +239,6 @@ def get_technical_indicator(df):
     # Value range: [negative infinity, positive infinity]
     # Example: A BETA value greater than 1 indicates higher volatility relative to the market. A BETA value less than 1 indicates lower volatility.
 
-    # Pearson's Correlation Coefficient (r): Measures correlation
-    df['CORREL'] = talib.CORREL(df['High'], df['Low'], timeperiod=30)
-    # Value range: [-1, 1]
-    # Example: A CORREL value close to 1 indicates a strong positive correlation. A CORREL value close to -1 indicates a strong negative correlation.
 
     # Linear Regression: Calculates linear regression
     df['LINEARREG'] = talib.LINEARREG(df['Close'], timeperiod=14)
@@ -357,6 +274,98 @@ def get_technical_indicator(df):
     df['VAR'] = talib.VAR(df['Close'], timeperiod=5, nbdev=1)
     # Value range: [0, positive infinity]
     # Example: Higher VAR values indicate higher volatility.
+
+    # 100 range
+    # Average Directional Movement Index: Measures trend strength
+    df['ADX'] = talib.ADX(df['High'], df['Low'], df['Close'], timeperiod=14)
+    # Value range: [0, 100]
+    # Example: Higher ADX values indicate a stronger trend. Values above 25 suggest a strong trend.
+
+    # Average Directional Movement Index Rating: Measures trend strength
+    df['ADXR'] = talib.ADXR(df['High'], df['Low'], df['Close'], timeperiod=14)
+    # Value range: [0, 100]
+    # Example: Higher ADXR values indicate a stronger trend. Values above 25 suggest a strong trend.
+
+    # Aroon: Identifies trend changes
+    df['AROON_down'], df['AROON_up'] = talib.AROON(df['High'], df['Low'], timeperiod=14)
+    # Value range: [0, 100]
+    # Example: Higher AROON_up values indicate a stronger uptrend. Higher AROON_down values indicate a stronger downtrend.
+
+    # Aroon Oscillator: Measures trend strength
+    df['AROONOSC'] = talib.AROONOSC(df['High'], df['Low'], timeperiod=14)
+    # Value range: [-100, 100]
+    # Example: Positive AROONOSC values indicate upward momentum. Negative AROONOSC values indicate downward momentum.
+
+    # Chande Momentum Oscillator: Measures momentum
+    df['CMO'] = talib.CMO(df['Close'], timeperiod=14)
+    # Value range: [-100, 100]
+    # Example: Positive CMO values indicate upward momentum. Negative CMO values indicate downward momentum.
+
+    # Directional Movement Index: Measures trend strength
+    df['DX'] = talib.DX(df['High'], df['Low'], df['Close'], timeperiod=14)
+    # Value range: [0, 100]
+    # Example: Higher DX values indicate a stronger trend. Values above 25 suggest a strong trend.
+
+    # Money Flow Index: Measures buying and selling pressure
+    df['MFI'] = talib.MFI(df['High'], df['Low'], df['Close'], df['Volume'], timeperiod=14)
+    # Value range: [0, 100]
+    # Example: MFI values above 80 indicate overbought conditions. MFI values below 20 indicate oversold conditions.
+
+    # Minus Directional Indicator: Measures trend strength
+    df['MINUS_DI'] = talib.MINUS_DI(df['High'], df['Low'], df['Close'], timeperiod=14)
+    # Value range: [0, 100]
+    # Example: Higher MINUS_DI values indicate a stronger downtrend.
+
+    # Plus Directional Indicator: Measures trend strength
+    df['PLUS_DI'] = talib.PLUS_DI(df['High'], df['Low'], df['Close'], timeperiod=14)
+    # Value range: [0, 100]
+    # Example: Higher PLUS_DI values indicate a stronger uptrend.
+
+    # Relative Strength Index: Measures momentum
+    df['RSI'] = talib.RSI(df['Close'], timeperiod=14)
+    # Value range: [0, 100]
+    # Example: RSI values above 70 indicate overbought conditions (potential fall). RSI values below 30 indicate oversold conditions (potential rise).
+
+    # Stochastic: Measures momentum
+    df['STOCH_slowk'], df['STOCH_slowd'] = talib.STOCH(df['High'], df['Low'], df['Close'], fastk_period=14, slowk_period=3, slowk_matype=0, slowd_period=3, slowd_matype=0)
+    # Value range: [0, 100]
+    # Example: Stochastic values above 80 indicate overbought conditions (potential fall). Stochastic values below 20 indicate oversold conditions (potential rise).
+
+    # Stochastic Fast: Measures momentum
+    df['STOCHF_fastk'], df['STOCHF_fastd'] = talib.STOCHF(df['High'], df['Low'], df['Close'], fastk_period=14, fastd_period=3, fastd_matype=0)
+    # Value range: [0, 100]
+    # Example: Fast Stochastic values above 80 indicate overbought conditions (potential fall). Fast Stochastic values below 20 indicate oversold conditions (potential rise).
+
+    # Stochastic Relative Strength Index: Measures momentum
+    df['STOCHRSI_fastk'], df['STOCHRSI_fastd'] = talib.STOCHRSI(df['Close'], timeperiod=14, fastk_period=14, fastd_period=3, fastd_matype=0)
+    # Value range: [0, 100]
+    # Example: Stochastic RSI values above 80 indicate overbought conditions (potential fall). Stochastic RSI values below 20 indicate oversold conditions (potential rise).
+
+    # Ultimate Oscillator: Measures momentum
+    df['ULTOSC'] = talib.ULTOSC(df['High'], df['Low'], df['Close'], timeperiod1=7, timeperiod2=14, timeperiod3=28)
+    # Value range: [0, 100]
+    # Example: ULTOSC values above 70 indicate overbought conditions (potential fall). ULTOSC values below 30 indicate oversold conditions (potential rise).
+
+    # Williams' %R: Measures overbought/oversold conditions
+    df['WILLR'] = talib.WILLR(df['High'], df['Low'], df['Close'], timeperiod=14)
+    # Value range: [-100, 0]
+    # Example: WILLR values above -20 indicate overbought conditions (potential fall). WILLR values below -80 indicate oversold conditions (potential rise).
+
+    # Balance Of Power: Measures buying and selling pressure
+    df['BOP'] = talib.BOP(df['Open'], df['High'], df['Low'], df['Close'])
+    # Value range: [-1, 1]
+    # Example: Positive BOP values indicate buying pressure. Negative BOP values indicate selling pressure.
+
+    # Hilbert Transform - Trend vs Cycle Mode: Identifies trend vs cycle mode
+    df['HT_TRENDMODE'] = talib.HT_TRENDMODE(df['Close'])
+    # Value range: [0, 1]
+    # Example: A value of 1 indicates a trending market. A value of 0 indicates a cyclical market.
+
+    # Pearson's Correlation Coefficient (r): Measures correlation
+    df['CORREL'] = talib.CORREL(df['High'], df['Low'], timeperiod=30)
+    # Value range: [-1, 1]
+    # Example: A CORREL value close to 1 indicates a strong positive correlation. A CORREL value close to -1 indicates a strong negative correlation.
+
 
     # Create new columns in a separate DataFrame
     new_columns = pd.DataFrame(index=df.index)

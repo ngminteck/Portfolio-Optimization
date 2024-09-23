@@ -36,16 +36,27 @@ def main_data_collection():
         if 'Settle' in df.columns:
             df['Close'] = df['Settle']
 
+        # Copy 'Prev. Day Open Interest' to 'Temp' if 'Prev. Day Open Interest' exists
+        if 'Prev. Day Open Interest' in df.columns:
+            df['Temp'] = df['Prev. Day Open Interest']
+
 
         # Add missing columns and reorder
         for column in column_name:
             if column not in df.columns:
                 df[column] = 0
 
+        if 'Temp' in df.columns:
+            df['Previous Day Open Interest'] = df['Temp']
+            df = df.drop(columns=['Temp'], axis=1)
+
+
+
         df = df.fillna(0)
         # reorder
         df = df[column_name]
         df = df.drop(columns=['Settle'], axis=1)
+        df = df.drop(columns=['Prev. Day Open Interest'], axis=1)
 
         # Convert 'Date' column to datetime
         df['Date'] = pd.to_datetime(df['Date'])
@@ -69,6 +80,12 @@ def main_data_collection():
 
     if 'Date' in column_name:
         column_name.remove('Date')
+
+    if 'Settle' in column_name:
+        column_name.remove('Settle')
+
+    if 'Prev. Day Open Interest' in column_name:
+        column_name.remove('Prev. Day Open Interest')
 
     currencies = ['SGD=X', 'SGDMYR=X', 'GBPSGD=X','EURSGD=X', 'SGDJPY=X', 'SGDHKD=X', 'SGDIDR=X', 'SGDCNY=X', 'SGDTHB=X', 'SGDINR=X', 'SGDKRW=X',
                   'AUDSGD=X', 'NZDSGD=X', 'GBPUSD=X', 'JPY=X', 'HKD=X', 'MYR=X', 'INR=X', 'CNY=X', 'PHP=X', 'IDR=X', 'THB=X', 'CHF=X', 'MXN=X',
@@ -102,7 +119,6 @@ def main_data_collection():
         df = df.fillna(0)
         # reorder
         df = df[column_name]
-        df = df.drop(columns=['Settle'], axis=1)
 
         print(f"Fetching {ticker_symbol} from yahoo finance was successfully")
         df = get_technical_indicator(df)

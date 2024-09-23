@@ -45,9 +45,8 @@ def main_training(classification = False):
         ticker_list = [os.path.splitext(f)[0] for f in os.listdir(path) if f.endswith('.csv')]
 
     for ticker_symbol in ticker_list:
-        df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
 
-        X, y_classifier, y_regressor = training_preprocess_data(df)
+        X, y_classifier, y_regressor = training_preprocess_data(ticker_symbol)
 
         # If you want to perform hyperparameter search and update the existing model:
         # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, True)
@@ -73,7 +72,7 @@ def main_training(classification = False):
 
         print(f"{ticker_symbol} done training.")
 
-        break
+
 
 
 

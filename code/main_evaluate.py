@@ -19,8 +19,8 @@ def mean_percentage_error(y_true, y_pred):
 def evaluate_model_mertric(original_df, ticker_symbol):
     original_df = original_df.iloc[:-1, :]
 
-    actual_signs = np.sign(original_df['DAILY_MIDPRICE_CHANGE'].diff().fillna(0))
-    actual_values = original_df['DAILY_MIDPRICE_CHANGE']
+    actual_signs = np.sign(original_df['DAILY_CLOSEPRICE_CHANGE'].diff().fillna(0))
+    actual_values = original_df['DAILY_CLOSEPRICE_CHANGE']
 
     ticker_df = load_or_create_ticker_metric_df('../result/ticker_metrics.csv')
     if ticker_symbol not in ticker_df['Ticker_Symbol'].values:
@@ -234,10 +234,7 @@ def main_evaluate():
         conv1d_lstm_regression_df = []
         transformer_regression_df = []
 
-
-        metric_df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
-
-        X, y_scaler = predict_preprocess_data(metric_df)
+        X, y_scaler = predict_preprocess_data(ticker_symbol)
 
         predict_error = False
 
@@ -388,7 +385,7 @@ def main_evaluate():
 
         # Calculating and assigning 'Top_1_Combined_Diff_Predict'
         values_list = [df.iloc[:, 0].values for df in [conv1d_regression_df[0], lstm_regression_df[0],
-                                                       conv1d_lstm_regression_df[0], xgbrfregressor_regression_df[0],
+                                                       grnn_regression_df[0], xgbrfregressor_regression_df[0],
                                                        xgbregressor_regression_df[0]]]
         abs_mean = np.mean(np.abs(values_list), axis=0)
         signs = np.sign(values_list)
@@ -398,7 +395,7 @@ def main_evaluate():
         # Calculating and assigning 'Top_5_Combined_Diff_Predict'
         # Concatenate all columns from each DataFrame
         all_dfs = (conv1d_regression_df + lstm_regression_df +
-                   conv1d_lstm_regression_df + xgbrfregressor_regression_df +
+                   grnn_regression_df + xgbrfregressor_regression_df +
                    xgbregressor_regression_df)
 
         values_list = [df.iloc[:, 0].values for df in all_dfs]
@@ -410,90 +407,90 @@ def main_evaluate():
         new_columns.loc[new_columns.index[-min_rows:], 'Top_5_Combined_Diff_Predict'] = abs_mean * majority_sign
 
         ###############################################################################################################
-
+        PREDICT_PRICE = 'Close'
         # Assigning values to 'Top_1_RF_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_1_RF_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_1_RF_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_RF_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_5_RF_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_5_RF_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_5_RF_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_RF_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_1_GT_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_1_GT_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_1_GT_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_GT_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_5_GT_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_5_GT_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_5_GT_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_GT_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_1_GRNN_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_1_GRNN_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_1_GRNN_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_GRNN_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_5_GRNN_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_5_GRNN_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_5_GRNN_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_GRNN_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_1_CNN1D_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_1_CNN1D_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_1_CNN1D_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_CNN1D_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_5_CNN1D_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_5_CNN1D_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_5_CNN1D_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_CNN1D_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_1_LSTM_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_1_LSTM_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_1_LSTM_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_LSTM_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_5_LSTM_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_5_LSTM_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_5_LSTM_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_LSTM_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_1_CNN1D_LSTM_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_1_CNN1D_LSTM_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns[
                                                                             'Top_1_CNN1D_LSTM_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_5_CNN1D_LSTM_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_5_CNN1D_LSTM_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns[
                                                                             'Top_5_CNN1D_LSTM_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_1_Combined_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_1_Combined_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_1_Combined_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_Combined_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
         # Assigning values to 'Top_5_Combined_Price_Predict'
         new_columns.loc[new_columns.index[-min_rows:], 'Top_5_Combined_Price_Predict'] = (
-                original_df['DAILY_MIDPRICE'].iloc[-min_rows:].values + new_columns['Top_5_Combined_Diff_Predict'].iloc[
+                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_Combined_Diff_Predict'].iloc[
                                                                         -min_rows:].values
         )
 
@@ -508,7 +505,7 @@ def main_evaluate():
 
         print(f"{ticker_symbol} done evaluate.")
 
-        break
+
 
 
 

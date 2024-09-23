@@ -9,57 +9,51 @@ Hyperparameters_Search_Models_Folder = "../models/hyperparameters_search_models/
 Trained_Models_Folder = "../models/trained_models/"
 Models_Display = "../models/models_display/"
 Feature_Importance_Folder = "../feature_importance/"
+Trained_Feature_Folder ='../trained_feature/'
 
 def make_all_directory():
     os.makedirs('../models/hyperparameters_search_models/xgbrfclassifier', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/xgbrfregressor', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/xgbclassifier_gbtree', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/xgbregressor_gbtree', exist_ok=True)
-
     os.makedirs('../models/hyperparameters_search_models/grnn_classification', exist_ok=True)
     os.makedirs('../models/hyperparameters_search_models/grnn_regression', exist_ok=True)
-
-    os.makedirs('../models/hyperparameters_search_models/conv1d_classification/', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/conv1d_regression/', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/lstm_classification/', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/lstm_regression/', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/transformer_classification/', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/transformer_regression/', exist_ok=True)
-
-    os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_classification/', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_regression/', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_classification', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_regression', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/lstm_classification', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/lstm_regression', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/transformer_classification', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/transformer_regression', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_classification', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_regression', exist_ok=True)
 
     os.makedirs('../models/trained_models/xgbrfclassifier', exist_ok=True)
     os.makedirs('../models/trained_models/xgbrfregressor', exist_ok=True)
     os.makedirs('../models/trained_models/xgbclassifier_gbtree', exist_ok=True)
     os.makedirs('../models/trained_models/xgbregressor_gbtree', exist_ok=True)
-
     os.makedirs('../models/trained_models/grnn_classification', exist_ok=True)
     os.makedirs('../models/trained_models/grnn_regression', exist_ok=True)
-
-
-    os.makedirs('../models/trained_models/conv1d_classification/', exist_ok=True)
-    os.makedirs('../models/trained_models/conv1d_regression/', exist_ok=True)
-    os.makedirs('../models/trained_models/lstm_classification/', exist_ok=True)
-    os.makedirs('../models/trained_models/lstm_regression/', exist_ok=True)
-    os.makedirs('../models/trained_models/transformer_classification/', exist_ok=True)
-    os.makedirs('../models/trained_models/transformer_regression/', exist_ok=True)
-
-    os.makedirs('../models/trained_models/conv1d_lstm_classification/', exist_ok=True)
-    os.makedirs('../models/trained_models/conv1d_lstm_regression/', exist_ok=True)
-
+    os.makedirs('../models/trained_models/conv1d_classification', exist_ok=True)
+    os.makedirs('../models/trained_models/conv1d_regression', exist_ok=True)
+    os.makedirs('../models/trained_models/lstm_classification', exist_ok=True)
+    os.makedirs('../models/trained_models/lstm_regression', exist_ok=True)
+    os.makedirs('../models/trained_models/transformer_classification', exist_ok=True)
+    os.makedirs('../models/trained_models/transformer_regression', exist_ok=True)
+    os.makedirs('../models/trained_models/conv1d_lstm_classification', exist_ok=True)
+    os.makedirs('../models/trained_models/conv1d_lstm_regression', exist_ok=True)
 
     os.makedirs('../feature_importance/xgbrfclassifier', exist_ok=True)
     os.makedirs('../feature_importance/xgbrfregressor', exist_ok=True)
     os.makedirs('../feature_importance/xgbclassifier_gbtree', exist_ok=True)
     os.makedirs('../feature_importance/xgbregressor_gbtree', exist_ok=True)
 
-
     os.makedirs('../data/all', exist_ok=True)
     os.makedirs('../data/train', exist_ok=True)
     os.makedirs('../data/test', exist_ok=True)
 
     os.makedirs('../data/commodities_historical_data/original', exist_ok=True)
+
+    os.makedirs('../trained_feature', exist_ok=True)
 
     os.makedirs('../result/ticker', exist_ok=True)
 
