@@ -219,10 +219,7 @@ def training_preprocess_data(ticker_symbol):
     #for index, column in enumerate(df.columns):
      #   print(f"{index} : {column}")
 
-    # Copy the DataFrame for feature processing
     X = df.copy(deep=True)
-
-    # Drop specific columns
     columns_to_drop = [
         'NEXT_DAY_CLOSEPRICE', 'DAILY_CLOSEPRICE_CHANGE', 'DAILY_CLOSEPRICE_CHANGE_PERCENT',
         'DAILY_CLOSEPRICE_DIRECTION',
@@ -231,8 +228,6 @@ def training_preprocess_data(ticker_symbol):
         'Date',
     ]
     X = X.drop(columns=columns_to_drop)
-
-    # Drop additional columns by index range if needed
     X = X.drop(X.columns[99:162], axis=1)
 
     # Drop columns with only one unique value

@@ -16,8 +16,9 @@ Model_Type = "grnn_regression"
 def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
 
-    X = X.to_numpy()
-    y = y.to_numpy().reshape(-1, 1)
+    # Convert to tensors directly
+    X = torch.tensor(X.values, dtype=torch.float32)
+    y = torch.tensor(y.values.reshape(-1, 1), dtype=torch.float32)
 
     # Split data into training and validation sets
     TEST_SIZE = 0.2
@@ -42,50 +43,49 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         best_val_rmse = np.inf
         epochs_no_improve = 0
 
-        input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-        target_train = torch.tensor(y_train, dtype=torch.float32).to(device)
-
-        input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-        target_val = torch.tensor(y_val, dtype=torch.float32).to(device)
-
-        # Create DataLoader for batching
-        train_dataset = TensorDataset(input_train, target_train)
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        train_loader = DataLoader(TensorDataset(X_train, y_train), batch_size=batch_size, shuffle=True)
+        val_loader = DataLoader(TensorDataset(X_val, y_val), batch_size=batch_size, shuffle=False)
 
         for epoch in range(epochs):
             model.train()
-            for batch_x, batch_y in train_loader:
+            for input_train, target_train in train_loader:
+                input_train, target_train = input_train.to(device), target_train.to(device)
                 optimizer.zero_grad()
-                output = model(batch_x)
-                loss = criterion(output, batch_y)
+                output = model(input_train)
+                loss = criterion(output, target_train)
                 loss.backward()
                 optimizer.step()
 
             model.eval()
+            val_rmse = 0
             with torch.no_grad():
-                val_output = model(input_val)
-                val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
+                for input_val, target_val in val_loader:
+                    input_val, target_val = input_val.to(device), target_val.to(device)
+                    val_output = model(input_val)
+                    val_rmse += root_mean_squared_error(target_val.cpu(), val_output.cpu()).item()
 
-                # Report intermediate objective value
-                trial.report(val_rmse, epoch)
+            val_rmse /= len(val_loader)
 
-                # Prune unpromising trials
-                if trial.should_prune():
-                    raise optuna.TrialPruned()
+            # Report intermediate objective value
+            trial.report(val_rmse, epoch)
 
-                if val_rmse < best_val_rmse:
-                    best_val_rmse = val_rmse
-                    epochs_no_improve = 0
-                else:
-                    epochs_no_improve += 1
+            # Prune unpromising trials
+            if trial.should_prune():
+                raise optuna.TrialPruned()
 
-                if epochs_no_improve >= patience:
-                    break
+            if val_rmse < best_val_rmse:
+                best_val_rmse = val_rmse
+                epochs_no_improve = 0
+            else:
+                epochs_no_improve += 1
+
+            if epochs_no_improve >= patience:
+                break
 
         return best_val_rmse
 
     study = optuna.create_study(direction='minimize', pruner=optuna.pruners.MedianPruner())
-    study.optimize(grnn_regression_objective,  n_trials=MAX_TRIALS)
+    study.optimize(grnn_regression_objective, n_trials=MAX_TRIALS)
 
     # Get all trials
     all_trials = study.trials
@@ -148,38 +148,38 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
             best_val_rmse = np.inf
             epochs_no_improve = 0
 
-            input_train = torch.tensor(X_train, dtype=torch.float32).to(device)
-            target_train = torch.tensor(y_train, dtype=torch.float32).to(device)
-
-            input_val = torch.tensor(X_val, dtype=torch.float32).to(device)
-            target_val = torch.tensor(y_val, dtype=torch.float32).to(device)
-
-            # Create DataLoader for batching
-            train_dataset = TensorDataset(input_train, target_train)
-            train_loader = DataLoader(train_dataset, batch_size=trial_params['batch_size'], shuffle=True)
+            train_loader = DataLoader(TensorDataset(X_train, y_train), batch_size=trial_params['batch_size'],
+                                      shuffle=True)
+            val_loader = DataLoader(TensorDataset(X_val, y_val), batch_size=trial_params['batch_size'], shuffle=False)
 
             for epoch in range(epochs):
                 model.train()
-                for batch_x, batch_y in train_loader:
+                for input_train, target_train in train_loader:
+                    input_train, target_train = input_train.to(device), target_train.to(device)
                     optimizer.zero_grad()
-                    output = model(batch_x)
-                    loss = criterion(output, batch_y)
+                    output = model(input_train)
+                    loss = criterion(output, target_train)
                     loss.backward()
                     optimizer.step()
 
                 model.eval()
+                val_rmse = 0
                 with torch.no_grad():
-                    val_output = model(input_val)
-                    val_rmse = root_mean_squared_error(target_val.cpu(), val_output.cpu())
+                    for input_val, target_val in val_loader:
+                        input_val, target_val = input_val.to(device), target_val.to(device)
+                        val_output = model(input_val)
+                        val_rmse += root_mean_squared_error(target_val.cpu(), val_output.cpu()).item()
 
-                    if val_rmse < best_val_rmse:
-                        best_val_rmse = val_rmse
-                        epochs_no_improve = 0
-                    else:
-                        epochs_no_improve += 1
+                val_rmse /= len(val_loader)
 
-                    if epochs_no_improve >= patience:
-                        break
+                if val_rmse < best_val_rmse:
+                    best_val_rmse = val_rmse
+                    epochs_no_improve = 0
+                else:
+                    epochs_no_improve += 1
+
+                if epochs_no_improve >= patience:
+                    break
 
             # Save the new model from trial
             torch.save(model.state_dict(), new_model_path)
