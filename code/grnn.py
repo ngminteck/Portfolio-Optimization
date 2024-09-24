@@ -21,7 +21,16 @@ class GRNN(nn.Module):
     def forward(self, x):
         dist = torch.cdist(x, x)
         weights = torch.exp(-dist ** 2 / (2 * self.sigma ** 2))
-        weights = weights / (weights.sum(dim=1, keepdim=True) + 1e-8)  # Add a small epsilon to avoid division by zero
+        # Calculate the sum along the specified dimension
+        sums = weights.sum(dim=1, keepdim=True)
+
+        # Check if sums are zero
+        if torch.any(sums == 0):
+            weights[sums == 0] = 0
+        else:
+            # Normalize weights
+            weights = weights / sums
+
         output = torch.mm(weights, x)
 
         if self.classification:
@@ -30,3 +39,4 @@ class GRNN(nn.Module):
             output = self.linear(output)
 
         return output
+

@@ -12,10 +12,6 @@ from transformer_regression import *
 
 from xgbrfclassifier import *
 from xgbclassifier_gbtree import *
-from grnn_classification import *
-from cov1d_classification import *
-from lstm_classification import *
-from cov1d_lstm_classification import *
 
 
 def main_training(classification = False):
@@ -66,10 +62,7 @@ def main_training(classification = False):
         if classification:
             xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol)
             xgbrfclassifier_resume_training(X, y_classifier, gpu_available, ticker_symbol)
-            grnn_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
-            conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
-            lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
-            conv1d_lstm_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+
 
         print(f"{ticker_symbol} done training.")
 

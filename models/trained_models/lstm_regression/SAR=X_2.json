@@ -1,0 +1,1 @@
+{"sequence_length": 20, "hidden_size": 56, "num_layers": 1, "num_blocks": 1, "dropout_rate": 0.11564635057135134, "lr": 0.038532194474339615, "batch_size": 145}

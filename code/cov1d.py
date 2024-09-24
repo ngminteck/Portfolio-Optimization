@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
+
 class Conv1ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, l2_lambda=0.01, dropout_rate=0.5):
         super(Conv1ResidualBlock, self).__init__()
@@ -37,8 +38,9 @@ class Conv1ResidualBlock(nn.Module):
 
         return out
 
+
 class Conv1DModel(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, num_blocks=1, l2_lambda=0.01, dropout_rate=0.5,
+    def __init__(self, in_channels, out_channels, kernel_size, l2_lambda=0.01, dropout_rate=0.5, num_blocks=1,
                  classification=True):
         super(Conv1DModel, self).__init__()
         self.blocks = nn.Sequential(

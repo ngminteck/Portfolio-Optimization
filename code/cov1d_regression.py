@@ -38,7 +38,7 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
         epochs = 1000
         patience = 10
 
-        model = Conv1DModel(in_channels, out_channels, kernel_size, num_blocks, l2_lambda, dropout_rate, classification=False).to(device)
+        model = Conv1DModel(in_channels, out_channels, kernel_size, l2_lambda, dropout_rate, num_blocks, classification=False).to(device)
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=l2_lambda)
         criterion = nn.MSELoss()
 
@@ -143,7 +143,7 @@ def conv1d_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
             epochs = 1000
             patience = 10
 
-            model = Conv1DModel(in_channels, trial_params['out_channels'], trial_params['kernel_size'], trial_params['num_blocks'], trial_params['l2_lambda'], trial_params['dropout_rate'], classification=False).to(device)
+            model = Conv1DModel(in_channels, trial_params['out_channels'], trial_params['kernel_size'], trial_params['l2_lambda'], trial_params['dropout_rate'], trial_params['num_blocks'], classification=False).to(device)
             optimizer = optim.Adam(model.parameters(), lr=trial_params['lr'], weight_decay=trial_params['l2_lambda'])
             criterion = nn.MSELoss()
 
@@ -266,7 +266,7 @@ def conv1d_regression_predict(X, gpu_available, ticker_symbol, no=1):
     batch_size = model_params['batch_size']
 
     # Initialize the model with the loaded parameters
-    model = Conv1DModel(in_channels, out_channels, kernel_size, num_blocks, l2_lambda, dropout_rate, classification=False).to(device)
+    model = Conv1DModel(in_channels, out_channels, kernel_size, l2_lambda, dropout_rate, num_blocks, classification=False).to(device)
 
     # Load the model state dict
     model.load_state_dict(torch.load(trained_model_path, map_location=device, weights_only=True), strict=False)

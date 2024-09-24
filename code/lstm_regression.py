@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import root_mean_squared_error
 import shutil
 from torch.utils.data import DataLoader, TensorDataset
+import numpy as np
 
 from directory_manager import *
 from optuna_config import *
@@ -31,6 +32,7 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         dropout_rate = trial.suggest_float('dropout_rate', 0.1, 0.5)
         lr = trial.suggest_float('lr', 1e-5, 1e-1)
         batch_size = trial.suggest_int('batch_size', 16, 256)
+        l2_lambda = trial.suggest_float('l2_lambda', 1e-5, 1e-2)
 
         # Create sequences
         X_seq, y_seq = create_lstm_train_sequences(X, y, sequence_length)
@@ -41,8 +43,8 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         epochs = 1000
         patience = 10
 
-        model = LSTMModel(input_size, hidden_size, num_blocks, num_layers, dropout_rate, classification=False).to(device)
-        optimizer = optim.Adam(model.parameters(), lr=lr)
+        model = LSTMModel(input_size, hidden_size, l2_lambda, dropout_rate, num_layers, num_blocks, classification=False).to(device)
+        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=l2_lambda)
         criterion = nn.MSELoss()
 
         best_val_rmse = np.inf
@@ -151,8 +153,8 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
             epochs = 1000
             patience = 10
 
-            model = LSTMModel(input_size, trial_params['hidden_size'], trial_params['num_blocks'], trial_params['num_layers'], trial_params['dropout_rate'], classification=False).to(device)
-            optimizer = optim.Adam(model.parameters(), lr=trial_params['lr'])
+            model = LSTMModel(input_size, trial_params['hidden_size'], trial_params['l2_lambda'], trial_params['dropout_rate'], trial_params['num_layers'], trial_params['num_blocks'], classification=False).to(device)
+            optimizer = optim.Adam(model.parameters(), lr=trial_params['lr'], weight_decay=trial_params['l2_lambda'])
             criterion = nn.MSELoss()
 
             best_val_rmse = np.inf
@@ -267,6 +269,7 @@ def lstm_regression_predict(X, gpu_available, ticker_symbol, no=1):
     hidden_size = model_params['hidden_size']
     num_layers = model_params['num_layers']
     num_blocks = model_params['num_blocks']
+    l2_lambda = model_params['l2_lambda']
     dropout_rate = model_params['dropout_rate']
     batch_size = model_params['batch_size']
 
@@ -276,7 +279,7 @@ def lstm_regression_predict(X, gpu_available, ticker_symbol, no=1):
     input_size = X_seq.shape[2]
 
     # Initialize the model with the loaded parameters and move it to the device
-    model = LSTMModel(input_size, hidden_size, num_blocks, num_layers, dropout_rate, classification=False).to(device)
+    model = LSTMModel(input_size, hidden_size, l2_lambda, dropout_rate, num_layers, num_blocks, classification=False).to(device)
     model.load_state_dict(torch.load(trained_model_path, map_location=device, weights_only=True), strict=False)
     model.eval()  # Set the model to evaluation mode
 

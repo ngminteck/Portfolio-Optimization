@@ -245,6 +245,8 @@ def training_preprocess_data(ticker_symbol):
         for col in X.columns:
             f.write(col + '\n')
 
+    print(X.shape)
+
     return X, y_classifier, y_regressor_scaled
 
 def predict_preprocess_data(ticker_symbol):
@@ -268,13 +270,12 @@ def predict_preprocess_data(ticker_symbol):
     y_regressor = df[['DAILY_CLOSEPRICE_CHANGE']]  # Convert to DataFrame
     y_regressor_scaled = pd.DataFrame(y_scaler.fit_transform(y_regressor), columns=y_regressor.columns)
 
-    trained_X_feature = []
+
     file = f'{Trained_Feature_Folder}{ticker_symbol}.txt'
     with open(file, 'r') as f:
         column_names = f.read().splitlines()
-        trained_X_feature.append(column_names)
 
-    X = df.filter(trained_X_feature).copy()
+    X = df.filter(column_names).copy()
 
     columns_to_divide_by_100 = [col for col in division_hundred_columns if col in X.columns]
     X[columns_to_divide_by_100] = X[columns_to_divide_by_100] / 100
@@ -282,6 +283,8 @@ def predict_preprocess_data(ticker_symbol):
     columns_to_standard_scale = [col for col in standard_scaled_columns if col in X.columns]
     X_scaler = StandardScaler()
     X[columns_to_standard_scale] = X_scaler.fit_transform(X[columns_to_standard_scale])
+
+    print(X.shape)
 
     return X, y_scaler
 
