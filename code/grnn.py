@@ -25,10 +25,10 @@ class GRNN(nn.Module):
         sums = weights.sum(dim=1, keepdim=True)
 
         # Check if sums are zero
-        if torch.any(sums == 0):
-            weights[sums == 0] = 0
+        zero_sums_mask = (sums == 0).squeeze()
+        if torch.any(zero_sums_mask):
+            weights[zero_sums_mask, :] = 0
         else:
-            # Normalize weights
             weights = weights / sums
 
         output = torch.mm(weights, x)
