@@ -19,6 +19,7 @@ class GRNN(nn.Module):
             nn.init.constant_(self.linear.bias, 0)
 
     def forward(self, x):
+
         dist = torch.cdist(x, x)
         weights = torch.exp(-dist ** 2 / (2 * self.sigma ** 2))
         # Calculate the sum along the specified dimension

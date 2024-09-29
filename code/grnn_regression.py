@@ -1,5 +1,7 @@
 import optuna
 import json
+
+import torch
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import root_mean_squared_error
@@ -16,6 +18,7 @@ Model_Type = "grnn_regression"
 def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
 
+    # Convert to tensors directly
     X = torch.tensor(X.values, dtype=torch.float32)
     y = torch.tensor(y.values.reshape(-1, 1), dtype=torch.float32)
 
@@ -61,8 +64,6 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
                 for input_val, target_val in val_loader:
                     input_val, target_val = input_val.to(device), target_val.to(device)
                     val_output = model(input_val)
-                    if torch.isnan(val_output).any():
-                        raise ValueError("NaN values detected in model output")
                     val_rmse += root_mean_squared_error(target_val.cpu(), val_output.cpu()).item()
 
             val_rmse /= len(val_loader)
