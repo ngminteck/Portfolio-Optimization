@@ -3,14 +3,13 @@ import joblib
 import optuna
 from xgboost import XGBRFRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import root_mean_squared_error
 import shutil
 
 from directory_manager import *
 from optuna_config import *
+from metric import *
 
 Model_Type = "xgbrfregressor"
-
 
 def xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
 
@@ -34,21 +33,18 @@ def xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
             'num_parallel_tree': 10 * os.cpu_count()
         }
 
-
         model = XGBRFRegressor(**param)
         model.fit(X_train, y_train, eval_set=[(X_valid, y_valid)], verbose=False)
         preds = model.predict(X_valid)
-        rmse = root_mean_squared_error(y_valid, preds)
-        return rmse
+        plr = profit_loss_np(y_valid, preds)
+        return plr
 
-    study = optuna.create_study(direction='minimize')
+    study = optuna.create_study(direction='maximize')
     study.optimize(xgbrfregressor_objective, n_trials=MAX_TRIALS)
 
     # Get all trials
     all_trials = study.trials
-
-    # Sort trials by their objective values in ascending order
-    sorted_trials = sorted(all_trials, key=lambda trial: trial.value)
+    sorted_trials = sorted(all_trials, key=lambda trial: trial.value, reverse=True)
 
     metrics = {}
     for i in range(0, 5):
@@ -64,12 +60,20 @@ def xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
 
     if ticker_symbol in ticker_df['Ticker_Symbol'].values:
         for i in range(1, 6):
+            hyperparameter_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pkl'
+            hyperparameter_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+            model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pkl'
+            params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
             column_name = f"{Model_Type}_{i}"
             current_score = ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name].values[0]
-            if not pd.isnull(current_score):
+            if not pd.isnull(current_score) and \
+                    os.path.exists(hyperparameter_model_path) and \
+                    os.path.exists(hyperparameter_params_path) and \
+                    os.path.exists(model_path) and \
+                    os.path.exists(params_path):
                 metrics[f'old_{i}'] = current_score
 
-    sorted_metrics = dict(sorted(metrics.items(), key=lambda item: item[1]))
+    sorted_metrics = dict(sorted(metrics.items(), key=lambda item: item[1], reverse=True))
     sorted_metrics_list = list(sorted_metrics.items())
 
     for i in range(4, -1, -1):
@@ -82,8 +86,8 @@ def xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         if key.startswith('old'):
             # Extract the index from the key using split method
             old_index = key.split('_')[1]
-            old_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pkl'
-            old_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
+            old_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pkl'
+            old_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
             old_feature_path = f'{Feature_Importance_Folder}{Model_Type}/{ticker_symbol}_{old_index}.csv'
 
             rename_and_overwrite(old_model_path, new_model_path)

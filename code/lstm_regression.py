@@ -2,7 +2,6 @@ import optuna
 import json
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import root_mean_squared_error
 import shutil
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
@@ -11,6 +10,7 @@ from directory_manager import *
 from optuna_config import *
 from lstm import *
 from sequence_length import *
+from metric import *
 
 Model_Type = "lstm_regression"
 
@@ -46,12 +46,11 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         model = LSTMModel(input_size, hidden_size, l2_lambda, dropout_rate, num_layers, num_blocks, classification=False).to(device)
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=l2_lambda)
         criterion = nn.MSELoss()
-
-        best_val_rmse = np.inf
         epochs_no_improve = 0
-
         train_loader = DataLoader(TensorDataset(X_train, y_train), batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(TensorDataset(X_val, y_val), batch_size=batch_size, shuffle=False)
+
+        best_val_plr = -np.inf
 
         for epoch in range(epochs):
             model.train()
@@ -64,24 +63,24 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
                 optimizer.step()
 
             model.eval()
-            val_rmse = 0
+            val_plr = 0
             with torch.no_grad():
                 for input_val, target_val in val_loader:
                     input_val, target_val = input_val.to(device), target_val.to(device)
                     val_output = model(input_val)
-                    val_rmse += root_mean_squared_error(target_val.cpu(), val_output.cpu()).item()
+                    val_plr += profit_loss_torch(target_val.cpu(), val_output.cpu()).item()
 
-            val_rmse /= len(val_loader)
+            val_plr /= len(val_loader)
 
             # Report intermediate objective value
-            trial.report(val_rmse, epoch)
+            trial.report(val_plr, epoch)
 
             # Prune unpromising trials
             if trial.should_prune():
                 raise optuna.TrialPruned()
 
-            if val_rmse < best_val_rmse:
-                best_val_rmse = val_rmse
+            if val_plr > best_val_plr:
+                best_val_plr = val_plr
                 epochs_no_improve = 0
             else:
                 epochs_no_improve += 1
@@ -89,16 +88,15 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
             if epochs_no_improve >= patience:
                 break
 
-        return best_val_rmse
+        return best_val_plr
 
-    study = optuna.create_study(direction='minimize', pruner=optuna.pruners.MedianPruner())
+    study = optuna.create_study(direction='maximize', pruner=optuna.pruners.MedianPruner())
     study.optimize(lstm_regression_objective, n_trials=MAX_TRIALS)
 
     # Get all trials
     all_trials = study.trials
 
-    # Sort trials by their objective values in ascending order
-    sorted_trials = sorted(all_trials, key=lambda trial: trial.value)
+    sorted_trials = sorted(all_trials, key=lambda trial: trial.value, reverse=True)
 
     metrics = {}
     for i in range(0, 5):
@@ -114,12 +112,20 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
 
     if ticker_symbol in ticker_df['Ticker_Symbol'].values:
         for i in range(1, 6):
+            hyperparameter_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+            hyperparameter_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+            model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+            params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
             column_name = f"{Model_Type}_{i}"
             current_score = ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name].values[0]
-            if not pd.isnull(current_score):
+            if not pd.isnull(current_score) and \
+                    os.path.exists(hyperparameter_model_path) and \
+                    os.path.exists(hyperparameter_params_path) and \
+                    os.path.exists(model_path) and \
+                    os.path.exists(params_path):
                 metrics[f'old_{i}'] = current_score
 
-    sorted_metrics = dict(sorted(metrics.items(), key=lambda item: item[1]))
+    sorted_metrics = dict(sorted(metrics.items(), key=lambda item: item[1], reverse=True))
     sorted_metrics_list = list(sorted_metrics.items())
 
     for i in range(4, -1, -1):
@@ -131,8 +137,8 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         if key.startswith('old'):
             # Extract the index from the key using split method
             old_index = key.split('_')[1]
-            old_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pth'
-            old_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
+            old_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pth'
+            old_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
 
             rename_and_overwrite(old_model_path, new_model_path)
             rename_and_overwrite(old_params_path, new_params_path)
@@ -157,11 +163,12 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
             optimizer = optim.Adam(model.parameters(), lr=trial_params['lr'], weight_decay=trial_params['l2_lambda'])
             criterion = nn.MSELoss()
 
-            best_val_rmse = np.inf
             epochs_no_improve = 0
 
             train_loader = DataLoader(TensorDataset(X_train, y_train), batch_size=trial_params['batch_size'], shuffle=True)
             val_loader = DataLoader(TensorDataset(X_val, y_val), batch_size=trial_params['batch_size'], shuffle=False)
+
+            best_val_plr = -np.inf
 
             for epoch in range(epochs):
                 model.train()
@@ -174,17 +181,17 @@ def lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
                     optimizer.step()
 
                 model.eval()
-                val_rmse = 0
+                val_plr = 0
                 with torch.no_grad():
                     for input_val, target_val in val_loader:
                         input_val, target_val = input_val.to(device), target_val.to(device)
                         val_output = model(input_val)
-                        val_rmse += root_mean_squared_error(target_val.cpu(), val_output.cpu()).item()
+                        val_plr += profit_loss_torch(target_val.cpu(), val_output.cpu()).item()
 
-                val_rmse /= len(val_loader)
+                val_plr /= len(val_loader)
 
-                if val_rmse < best_val_rmse:
-                    best_val_rmse = val_rmse
+                if val_plr > best_val_plr:
+                    best_val_plr = val_plr
                     epochs_no_improve = 0
                 else:
                     epochs_no_improve += 1

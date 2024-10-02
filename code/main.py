@@ -1,5 +1,5 @@
 from directory_manager import *
-from main_data_collection import *
+#from main_data_collection import *
 from main_training import *
 from main_evaluate import *
 

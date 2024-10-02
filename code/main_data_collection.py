@@ -5,8 +5,6 @@ from data_preparation import *
 
 def main_data_collection():
 
-    news_sentiment = NewsSentiment()
-
     path = '../data/commodities_historical_data/original'
 
     commoditieslist = []
@@ -69,8 +67,6 @@ def main_data_collection():
         print(f"Fetching {commodities} technical indicator was successfully")
         query_search = []
         query_search.append(commodities)
-        df = news_sentiment.get_news_sentiment_score_by_feedparser(df, query_search)
-        print(f"Fetching {commodities} news sentiment was successfully")
         df = set_target(df)
         print(f"{commodities} set target successfully")
 
@@ -123,8 +119,6 @@ def main_data_collection():
         print(f"Fetching {ticker_symbol} from yahoo finance was successfully")
         df = get_technical_indicator(df)
         print(f"Fetching {ticker_symbol} technical indicator was successfully")
-        df = news_sentiment.get_news_sentiment_score_by_feedparser(df, query_search)
-        print(f"Fetching {ticker_symbol} news sentiment was successfully")
         df = set_target(df)
         print(f"{ticker_symbol} set target successfully")
         cut_off_date = datetime.today() - timedelta(days=2 * 365)
