@@ -8,159 +8,8 @@ from grnn_regression import *
 from cov1d_regression import *
 from lstm_regression import *
 from cov1d_lstm_regression import *
-
-
-def mean_percentage_error(y_true, y_pred):
-    # Avoid division by zero by replacing zeros with a small number (epsilon)
-    epsilon = 1e-10
-    y_true = np.where(y_true == 0, epsilon, y_true)
-    return np.mean((y_true - y_pred) / y_true) * 100
-
-def evaluate_model_mertric(original_df, ticker_symbol):
-    original_df = original_df.iloc[:-1, :]
-
-    actual_signs = np.sign(original_df['DAILY_CLOSEPRICE_CHANGE'].diff().fillna(0))
-    actual_values = original_df['DAILY_CLOSEPRICE_CHANGE']
-
-    ticker_df = load_or_create_ticker_metric_df('../result/ticker_metrics.csv')
-    if ticker_symbol not in ticker_df['Ticker_Symbol'].values:
-        # Create a new DataFrame for the new row
-        new_row = pd.DataFrame({'Ticker_Symbol': [ticker_symbol]})
-        # Concatenate the new row to the existing DataFrame
-        ticker_df = pd.concat([ticker_df, new_row], ignore_index=True)
-
-    # Top 1 RF
-    predicted_signs = np.sign(original_df['Top_1_RF_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_1_RF_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_RF_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_RF_Value_MPE_PERCENT'] = mpe
-
-    # Top 5 RF
-    predicted_signs = np.sign(original_df['Top_5_RF_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_5_RF_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_RF_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_RF_Value_MPE_PERCENT'] = mpe
-
-    # Top 1 GT
-    predicted_signs = np.sign(original_df['Top_1_GT_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_1_GT_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_GT_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_GT_Value_MPE_PERCENT'] = mpe
-
-    # Top 5 GT
-    predicted_signs = np.sign(original_df['Top_5_GT_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_5_GT_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_GT_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_GT_Value_MPE_PERCENT'] = mpe
-
-    # Top 1 GRNN
-    predicted_signs = np.sign(original_df['Top_1_GRNN_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_1_GRNN_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_GRNN_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_GRNN_Value_MPE_PERCENT'] = mpe
-
-    # Top 5 GRNN
-    predicted_signs = np.sign(original_df['Top_5_GRNN_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_5_GRNN_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_GRNN_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_GRNN_Value_MPE_PERCENT'] = mpe
-
-    # Top 1 CNN1D
-    predicted_signs = np.sign(original_df['Top_1_CNN1D_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_1_CNN1D_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_CNN1D_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_CNN1D_Value_MPE_PERCENT'] = mpe
-
-    # Top 5 CNN1D
-    predicted_signs = np.sign(original_df['Top_5_CNN1D_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_5_CNN1D_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_CNN1D_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_CNN1D_Value_MPE_PERCENT'] = mpe
-
-    # Top 1 LSTM
-    predicted_signs = np.sign(original_df['Top_1_LSTM_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_1_LSTM_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_LSTM_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_LSTM_Value_MPE_PERCENT'] = mpe
-
-    # Top 5 LSTM
-    predicted_signs = np.sign(original_df['Top_5_LSTM_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_5_LSTM_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_LSTM_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_LSTM_Value_MPE_PERCENT'] = mpe
-
-    # Top 1 CNN1D_LSTM
-    predicted_signs = np.sign(original_df['Top_1_CNN1D_LSTM_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_1_CNN1D_LSTM_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[
-        ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_CNN1D_LSTM_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_CNN1D_LSTM_Value_MPE_PERCENT'] = mpe
-
-    # Top 5 CNN1D_LSTM
-    predicted_signs = np.sign(original_df['Top_5_CNN1D_LSTM_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_5_CNN1D_LSTM_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[
-        ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_CNN1D_LSTM_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_CNN1D_LSTM_Value_MPE_PERCENT'] = mpe
-
-    # Top 1 Combined
-    predicted_signs = np.sign(original_df['Top_1_Combined_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_1_Combined_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[
-        ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_Combined_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_1_Combined_Value_MPE_PERCENT'] = mpe
-
-    # Top 5 Combined
-    predicted_signs = np.sign(original_df['Top_5_Combined_Diff_Predict'])
-    sign_accuracy = (actual_signs == predicted_signs).mean() * 100
-    predicted_values = original_df['Top_5_Combined_Diff_Predict']
-    mpe = mean_percentage_error(actual_values, predicted_values)
-    # Update the DataFrame with the calculated values
-    ticker_df.loc[
-        ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_Combined_Sign_Accuracy_PERCENT'] = sign_accuracy
-    ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, 'Top_5_Combined_Value_MPE_PERCENT'] = mpe
-
-    ticker_df.to_csv('../result/ticker_metrics.csv', index=False)
-
+from directory_manager import *
+from metric import *
 
 def main_evaluate():
     def is_gpu_available():
@@ -181,51 +30,6 @@ def main_evaluate():
 
     for ticker_symbol in ticker_list:
 
-        original_df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
-
-        # Create new columns in a separate DataFrame
-        new_columns = pd.DataFrame(index=original_df.index)
-
-        new_columns['Top_1_RF_Diff_Predict'] = np.nan
-        new_columns['Top_1_RF_Price_Predict'] = np.nan
-        new_columns['Top_5_RF_Diff_Predict'] = np.nan
-        new_columns['Top_5_RF_Price_Predict'] = np.nan
-
-        new_columns['Top_1_GT_Diff_Predict'] = np.nan
-        new_columns['Top_1_GT_Price_Predict'] = np.nan
-        new_columns['Top_5_GT_Diff_Predict'] = np.nan
-        new_columns['Top_5_GT_Price_Predict'] = np.nan
-
-        new_columns['Top_1_GRNN_Diff_Predict'] = np.nan
-        new_columns['Top_1_GRNN_Price_Predict'] = np.nan
-        new_columns['Top_5_GRNN_Diff_Predict'] = np.nan
-        new_columns['Top_5_GRNN_Price_Predict'] = np.nan
-
-        new_columns['Top_1_CNN1D_Diff_Predict'] = np.nan
-        new_columns['Top_1_CNN1D_Price_Predict'] = np.nan
-        new_columns['Top_5_CNN1D_Diff_Predict'] = np.nan
-        new_columns['Top_5_CNN1D_Price_Predict'] = np.nan
-
-        new_columns['Top_1_LSTM_Diff_Predict'] = np.nan
-        new_columns['Top_1_LSTM_Price_Predict'] = np.nan
-        new_columns['Top_5_LSTM_Diff_Predict'] = np.nan
-        new_columns['Top_5_LSTM_Price_Predict'] = np.nan
-
-        new_columns['Top_1_CNN1D_LSTM_Diff_Predict'] = np.nan
-        new_columns['Top_1_CNN1D_LSTM_Price_Predict'] = np.nan
-        new_columns['Top_5_CNN1D_LSTM_Diff_Predict'] = np.nan
-        new_columns['Top_5_CNN1D_LSTM_Price_Predict'] = np.nan
-
-        new_columns['Top_1_Transformer_Diff_Predict'] = np.nan
-        new_columns['Top_1_Transformer_Price_Predict'] = np.nan
-        new_columns['Top_5_Transformer_Diff_Predict'] = np.nan
-        new_columns['Top_5_Transformer_Price_Predict'] = np.nan
-
-        new_columns['Top_1_Combined_Diff_Predict'] = np.nan
-        new_columns['Top_1_Combined_Price_Predict'] = np.nan
-        new_columns['Top_5_Combined_Diff_Predict'] = np.nan
-        new_columns['Top_5_Combined_Price_Predict'] = np.nan
-
         xgbrfregressor_regression_df = []
         xgbregressor_regression_df = []
         grnn_regression_df = []
@@ -234,7 +38,7 @@ def main_evaluate():
         conv1d_lstm_regression_df = []
         transformer_regression_df = []
 
-        X, y_scaler = predict_preprocess_data(ticker_symbol)
+        X, y, y_scaler = predict_preprocess_data(ticker_symbol)
 
         predict_error = False
 
@@ -317,192 +121,89 @@ def main_evaluate():
         xgbregressor_regression_df = [df.iloc[-min_rows:] for df in xgbregressor_regression_df]
         grnn_regression_df = [df.iloc[-min_rows:] for df in grnn_regression_df]
 
-        # Assigning values to 'Top_1_RF_Diff_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_RF_Diff_Predict'] = xgbrfregressor_regression_df[0].iloc[
-                                                                                  :, 0].values
+        ticker_df = load_or_create_ticker_metric_df('../predicted_output/ticker_metrics.csv')
+        if ticker_symbol not in ticker_df['Ticker_Symbol'].values:
+            # Create a new DataFrame for the new row
+            new_row = pd.DataFrame({'Ticker_Symbol': [ticker_symbol]})
+            # Concatenate the new row to the existing DataFrame
+            ticker_df = pd.concat([ticker_df, new_row], ignore_index=True)
 
-        # Calculating and assigning 'Top_5_RF_Diff_Predict'
-        values_list = [df.iloc[:, 0].values for df in xgbrfregressor_regression_df]
-        abs_mean = np.mean(np.abs(values_list), axis=0)
-        signs = np.sign(values_list)
-        majority_sign = np.sign(np.sum(signs, axis=0))
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_RF_Diff_Predict'] = abs_mean * majority_sign
+        df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
 
-        # Assigning values to 'Top_1_GT_Diff_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_GT_Diff_Predict'] = xgbregressor_regression_df[0].iloc[:,
-                                                                                  0].values
+        if df.isna().sum().sum() > 0 or df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
+            df = df.replace([float('inf'), float('-inf')], np.nan).dropna()
 
-        # Calculating and assigning 'Top_5_GT_Diff_Predict'
-        values_list = [df.iloc[:, 0].values for df in xgbregressor_regression_df]
-        abs_mean = np.mean(np.abs(values_list), axis=0)
-        signs = np.sign(values_list)
-        majority_sign = np.sign(np.sum(signs, axis=0))
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_GT_Diff_Predict'] = abs_mean * majority_sign
+        predict_df = df[['Date', 'DAILY_CLOSEPRICE_CHANGE']].copy(deep=True)
+        y = y.iloc[-min_rows:]
+        predict_df = predict_df.iloc[-min_rows:]
+        are_columns_same = predict_df['DAILY_CLOSEPRICE_CHANGE'].equals(y['DAILY_CLOSEPRICE_CHANGE'])
+        print(are_columns_same)
+        # List of model prefixes
+        models = ['RF', 'GBT', 'GRNN', 'CNN', 'LSTM', 'CNN_LSTM']
 
+        # Add columns for each model
+        for model in models:
+            for i in range(1, 6):
+                column_name = f'{model}_{i}_Predicted_Close_Price_Change'
+                predict_df[column_name] = np.nan
 
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_GRNN_Diff_Predict'] = grnn_regression_df[0].iloc[:,
-                                                                                    0].values
+        for i in range(1, 6):
+            column_name = f"RF_{i}_Sign_Accuracy"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], xgbrfregressor_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"RF_{i}_Profit_Loss"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], xgbrfregressor_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"RF_{i}_Predicted_Close_Price_Change"
+            predict_df[column_name] = xgbrfregressor_regression_df[i - 1].iloc[:, 0].values
 
-        values_list = [df.iloc[:, 0].values for df in grnn_regression_df]
-        abs_mean = np.mean(np.abs(values_list), axis=0)
-        signs = np.sign(values_list)
-        majority_sign = np.sign(np.sum(signs, axis=0))
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_GRNN_Diff_Predict'] = abs_mean * majority_sign
+            column_name = f"GBT_{i}_Sign_Accuracy"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], xgbregressor_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"GBT_{i}_Profit_Loss"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], xgbregressor_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"GBT_{i}_Predicted_Close_Price_Change"
+            predict_df[column_name] = xgbregressor_regression_df[i - 1].iloc[:, 0].values
 
+            column_name = f"GRNN_{i}_Sign_Accuracy"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], grnn_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"GRNN_{i}_Profit_Loss"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], grnn_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"GRNN_{i}_Predicted_Close_Price_Change"
+            predict_df[column_name] = grnn_regression_df[i - 1].iloc[:, 0].values
 
-        # Assigning values to 'Top_1_CNN1D_Diff_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_CNN1D_Diff_Predict'] = conv1d_regression_df[0].iloc[:,
-                                                                                     0].values
+            column_name = f"CNN_{i}_Sign_Accuracy"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], conv1d_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"CNN_{i}_Profit_Loss"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], conv1d_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"CNN_{i}_Predicted_Close_Price_Change"
+            predict_df[column_name] = conv1d_regression_df[i - 1].iloc[:, 0].values
 
-        # Calculating and assigning 'Top_5_CNN1D_Diff_Predict'
-        values_list = [df.iloc[:, 0].values for df in conv1d_regression_df]
-        abs_mean = np.mean(np.abs(values_list), axis=0)
-        signs = np.sign(values_list)
-        majority_sign = np.sign(np.sum(signs, axis=0))
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_CNN1D_Diff_Predict'] = abs_mean * majority_sign
+            column_name = f"LSTM_{i}_Sign_Accuracy"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], lstm_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"LSTM_{i}_Profit_Loss"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], lstm_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"LSTM_{i}_Predicted_Close_Price_Change"
+            predict_df[column_name] = lstm_regression_df[i - 1].iloc[:, 0].values
 
-        # Assigning values to 'Top_1_LSTM_Diff_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_LSTM_Diff_Predict'] = lstm_regression_df[0].iloc[:,
-                                                                                    0].values
+            column_name = f"CNN_LSTM_{i}_Sign_Accuracy"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], conv1d_lstm_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"CNN_LSTM_{i}_Profit_Loss"
+            ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
+                predict_df['DAILY_CLOSEPRICE_CHANGE'], conv1d_lstm_regression_df[i - 1].iloc[:, 0].values)
+            column_name = f"CNN_LSTM_{i}_Predicted_Close_Price_Change"
+            predict_df[column_name] = conv1d_lstm_regression_df[i - 1].iloc[:, 0].values
 
-        # Calculating and assigning 'Top_5_LSTM_Diff_Predict'
-        values_list = [df.iloc[:, 0].values for df in lstm_regression_df]
-        abs_mean = np.mean(np.abs(values_list), axis=0)
-        signs = np.sign(values_list)
-        majority_sign = np.sign(np.sum(signs, axis=0))
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_LSTM_Diff_Predict'] = abs_mean * majority_sign
-
-        # Assigning values to 'Top_1_CNN1D_LSTM_Diff_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_CNN1D_LSTM_Diff_Predict'] = conv1d_lstm_regression_df[
-                                                                                              0].iloc[:, 0].values
-
-        # Calculating and assigning 'Top_5_CNN1D_LSTM_Diff_Predict'
-        values_list = [df.iloc[:, 0].values for df in conv1d_lstm_regression_df]
-        abs_mean = np.mean(np.abs(values_list), axis=0)
-        signs = np.sign(values_list)
-        majority_sign = np.sign(np.sum(signs, axis=0))
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_CNN1D_LSTM_Diff_Predict'] = abs_mean * majority_sign
-
-        # Calculating and assigning 'Top_1_Combined_Diff_Predict'
-        values_list = [df.iloc[:, 0].values for df in [conv1d_regression_df[0], lstm_regression_df[0],
-                                                       grnn_regression_df[0], xgbrfregressor_regression_df[0],
-                                                       xgbregressor_regression_df[0]]]
-        abs_mean = np.mean(np.abs(values_list), axis=0)
-        signs = np.sign(values_list)
-        majority_sign = np.sign(np.sum(signs, axis=0))
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_Combined_Diff_Predict'] = abs_mean * majority_sign
-
-        # Calculating and assigning 'Top_5_Combined_Diff_Predict'
-        # Concatenate all columns from each DataFrame
-        all_dfs = (conv1d_regression_df + lstm_regression_df +
-                   grnn_regression_df + xgbrfregressor_regression_df +
-                   xgbregressor_regression_df)
-
-        values_list = [df.iloc[:, 0].values for df in all_dfs]
-        abs_mean = np.mean(np.abs(values_list), axis=0)
-        signs = np.sign(values_list)
-        majority_sign = np.sign(np.sum(signs, axis=0))
-
-        # Assign the calculated values to 'Top_5_Combined_Diff_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_Combined_Diff_Predict'] = abs_mean * majority_sign
-
-        ###############################################################################################################
-        PREDICT_PRICE = 'Close'
-        # Assigning values to 'Top_1_RF_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_RF_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_RF_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_5_RF_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_RF_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_RF_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_1_GT_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_GT_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_GT_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_5_GT_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_GT_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_GT_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_1_GRNN_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_GRNN_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_GRNN_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_5_GRNN_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_GRNN_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_GRNN_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_1_CNN1D_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_CNN1D_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_CNN1D_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_5_CNN1D_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_CNN1D_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_CNN1D_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_1_LSTM_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_LSTM_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_LSTM_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_5_LSTM_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_LSTM_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_LSTM_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_1_CNN1D_LSTM_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_CNN1D_LSTM_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns[
-                                                                            'Top_1_CNN1D_LSTM_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_5_CNN1D_LSTM_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_CNN1D_LSTM_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns[
-                                                                            'Top_5_CNN1D_LSTM_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_1_Combined_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_1_Combined_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_1_Combined_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        # Assigning values to 'Top_5_Combined_Price_Predict'
-        new_columns.loc[new_columns.index[-min_rows:], 'Top_5_Combined_Price_Predict'] = (
-                original_df[PREDICT_PRICE].iloc[-min_rows:].values + new_columns['Top_5_Combined_Diff_Predict'].iloc[
-                                                                        -min_rows:].values
-        )
-
-        original_df = pd.concat([original_df, new_columns], axis=1)
-
-        SLICE_SIZE = 87 + 30
-        original_df = original_df.iloc[SLICE_SIZE:, :]
-
-        original_df.to_csv(f'../result/ticker/{ticker_symbol}.csv')
-
-        evaluate_model_mertric(original_df, ticker_symbol)
-
+        predict_df.to_csv(f'../predicted_output/ticker/{ticker_symbol}.csv', index=False)
+        ticker_df.to_csv(f'../predicted_output/ticker_metrics.csv', index=False)
         print(f"{ticker_symbol} done evaluate.")
 
 

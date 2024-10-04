@@ -11,8 +11,8 @@ from metric import *
 
 Model_Type = "xgbrfregressor"
 
-def xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
 
+def xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=42)
 
     def xgbrfregressor_objective(trial):
@@ -36,7 +36,7 @@ def xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         model = XGBRFRegressor(**param)
         model.fit(X_train, y_train, eval_set=[(X_valid, y_valid)], verbose=False)
         preds = model.predict(X_valid)
-        plr = profit_loss_np(y_valid, preds)
+        plr = accuracy_np(y_valid, preds)
         return plr
 
     study = optuna.create_study(direction='maximize')
@@ -81,14 +81,14 @@ def xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         rank = i + 1
         new_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{rank}.pkl'
         new_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{rank}.json'
-        new_feature_path = f'{Feature_Importance_Folder}{Model_Type}/{ticker_symbol}_{rank}.csv'
+        new_feature_path = f'{Hyperparameters_Search_Feature_Importance_Folder}{Model_Type}/{ticker_symbol}_{rank}.csv'
 
         if key.startswith('old'):
             # Extract the index from the key using split method
             old_index = key.split('_')[1]
             old_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pkl'
             old_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
-            old_feature_path = f'{Feature_Importance_Folder}{Model_Type}/{ticker_symbol}_{old_index}.csv'
+            old_feature_path = f'{Trained_Models_Feature_Importance_Folder}{Model_Type}/{ticker_symbol}_{old_index}.csv'
 
             rename_and_overwrite(old_model_path, new_model_path)
             rename_and_overwrite(old_params_path, new_params_path)
@@ -116,22 +116,29 @@ def xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     ticker_df.to_csv(Ticker_Hyperparams_Model_Metrics_Csv, index=False)
 
 
-def xgbrfregressor_resume_training(X, y, gpu_available, ticker_symbol, hyperparameter_search=False, delete_old_data=False):
-
+def xgbrfregressor_resume_training(X, y, gpu_available, ticker_symbol, hyperparameter_search=False,
+                                   delete_old_data=False):
     if delete_old_data:
         delete_hyperparameter_search_model(ticker_symbol, Model_Type)
 
-
-    all_existed = True
+    hyperparameter_search_needed = False
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pkl'
         hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
-        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(hyperparameters_search_model_params_path):
-            all_existed = False
+        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(
+                hyperparameters_search_model_params_path):
+            hyperparameter_search_needed = True
             break
 
-    if not all_existed or hyperparameter_search:
+    if hyperparameter_search:
+        ticker_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
+        column_name = f"{Model_Type}_5"
+        current_score = ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name].values[0]
+        if pd.isnull(current_score) or current_score < ACCEPTABLE_SCORE:
+            hyperparameter_search_needed = True
+
+    if hyperparameter_search_needed:
         xgbrfregressor_hyperparameters_search(X, y, gpu_available, ticker_symbol)
 
     for i in range(1, 6):
@@ -141,8 +148,12 @@ def xgbrfregressor_resume_training(X, y, gpu_available, ticker_symbol, hyperpara
         hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
         trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
+        hyperparameters_search_feature_path = f'{Hyperparameters_Search_Feature_Importance_Folder}{Model_Type}/{ticker_symbol}_{i}.csv'
+        trained_model_feature_path = f'{Trained_Models_Feature_Importance_Folder}{Model_Type}/{ticker_symbol}_{i}.csv'
+
         shutil.copy2(hyperparameters_search_model_path, trained_model_path)
         shutil.copy2(hyperparameters_search_model_params_path, trained_model_params_path)
+        shutil.copy2(hyperparameters_search_feature_path, trained_model_feature_path)
 
     hyperparameters_search_model_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
 

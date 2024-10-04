@@ -14,6 +14,7 @@ from metric import *
 
 Model_Type = "grnn_regression"
 
+
 def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
 
@@ -62,7 +63,7 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
                 for input_val, target_val in val_loader:
                     input_val, target_val = input_val.to(device), target_val.to(device)
                     val_output = model(input_val)
-                    val_plr += profit_loss_torch(target_val.cpu(), val_output.cpu()).item()
+                    val_plr += accuracy_torch(target_val.cpu(), val_output.cpu()).item()
 
             val_plr /= len(val_loader)
 
@@ -175,7 +176,7 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
                     for input_val, target_val in val_loader:
                         input_val, target_val = input_val.to(device), target_val.to(device)
                         val_output = model(input_val)
-                        val_plr += profit_loss_torch(target_val.cpu(), val_output.cpu()).item()
+                        val_plr += accuracy_torch(target_val.cpu(), val_output.cpu()).item()
 
                 val_plr /= len(val_loader)
 
@@ -197,22 +198,30 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     # Save the updated ticker_df back to the CSV
     ticker_df.to_csv(Ticker_Hyperparams_Model_Metrics_Csv, index=False)
 
-def grnn_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperparameter_search=False,
-                                          delete_old_data=False):
 
+def grnn_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperparameter_search=False,
+                                    delete_old_data=False):
     if delete_old_data:
         delete_hyperparameter_search_model(ticker_symbol, Model_Type)
 
-    all_existed = True
+    hyperparameter_search_needed = False
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
         hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
-        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(hyperparameters_search_model_params_path):
-            all_existed = False
+        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(
+                hyperparameters_search_model_params_path):
+            hyperparameter_search_needed = True
             break
 
-    if not all_existed or hyperparameter_search:
+    if hyperparameter_search:
+        ticker_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
+        column_name = f"{Model_Type}_5"
+        current_score = ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name].values[0]
+        if pd.isnull(current_score) or current_score < ACCEPTABLE_SCORE:
+            hyperparameter_search_needed = True
+
+    if hyperparameter_search_needed:
         grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
 
     for i in range(1, 6):
@@ -287,4 +296,3 @@ def grnn_regression_predict(X, gpu_available, ticker_symbol, no=1):
     preds_df = pd.DataFrame(preds_numpy, columns=['Prediction'])
 
     return preds_df
-

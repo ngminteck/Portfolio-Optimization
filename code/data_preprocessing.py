@@ -238,16 +238,11 @@ def training_preprocess_data(ticker_symbol):
         'Date',
     ]
     X = X.drop(columns=columns_to_drop)
-    X = X.drop(X.columns[99:162], axis=1)
+    X = X.drop(X.columns[98:161], axis=1)
 
-    # Drop columns with only one unique value
-    X = X.loc[:, X.nunique() > 1]
-
-    print(X.shape)
-    
     columns_to_append = [col for col in sentiment_columns if col in df.columns and col not in X.columns]
     
-        # Append the missing sentiment columns from df to X
+    # Append the missing sentiment columns from df to X
     if columns_to_append:
         # Reset indices before concatenation
         X = X.reset_index(drop=True)
@@ -255,6 +250,9 @@ def training_preprocess_data(ticker_symbol):
         X = pd.concat([X, sentiment_data], axis=1)
 
     print(X.shape)
+
+    # Drop columns with only one unique value
+    X = X.loc[:, X.nunique() > 1]
     
     columns_to_divide_by_100 = [col for col in division_hundred_columns if col in X.columns]
     X[columns_to_divide_by_100] = X[columns_to_divide_by_100] / 100
@@ -292,7 +290,7 @@ def training_preprocess_data(ticker_symbol):
             f.write(col + '\n')
 
 
-    return X, y_classifier, y_regressor_scaled
+    return X, y_regressor_scaled
 
 def predict_preprocess_data(ticker_symbol):
     df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
@@ -330,6 +328,6 @@ def predict_preprocess_data(ticker_symbol):
     X_scaler = StandardScaler()
     X[columns_to_standard_scale] = X_scaler.fit_transform(X[columns_to_standard_scale])
 
-    return X, y_scaler
+    return X, y_regressor, y_scaler
 
 

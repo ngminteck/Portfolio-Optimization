@@ -2,6 +2,7 @@ from optuna.integration import PyTorchLightningPruningCallback
 
 
 MAX_TRIALS = 20
+ACCEPTABLE_SCORE = 70.0
 
 class EarlyStoppingCallback:
     def __init__(self, patience=10):

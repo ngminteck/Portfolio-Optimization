@@ -10,9 +10,6 @@ from lstm_regression import *
 from cov1d_lstm_regression import *
 from transformer_regression import *
 
-from xgbrfclassifier import *
-from xgbclassifier_gbtree import *
-
 
 def main_training(classification = False):
     logical_cores = os.cpu_count()
@@ -42,7 +39,7 @@ def main_training(classification = False):
 
     for ticker_symbol in ticker_list:
 
-        X, y_classifier, y_regressor = training_preprocess_data(ticker_symbol)
+        X, y_regressor = training_preprocess_data(ticker_symbol)
 
 
         # If you want to perform hyperparameter search and update the existing model:
@@ -54,14 +51,12 @@ def main_training(classification = False):
         xgbregressor_gbtree_resume_training(X, y_regressor, gpu_available, ticker_symbol)
         xgbrfregressor_resume_training(X, y_regressor, gpu_available, ticker_symbol)
         grnn_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-        conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-        lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
-        conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
+        conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, True)
+        lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, True)
+        conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, True)
         #transformer_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
-        if classification:
-            xgbclassifier_gbtree_resume_training(X, y_classifier, gpu_available, ticker_symbol)
-            xgbrfclassifier_resume_training(X, y_classifier, gpu_available, ticker_symbol)
+
 
 
         print(f"{ticker_symbol} done training.")

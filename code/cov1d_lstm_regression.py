@@ -66,7 +66,7 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
                 for input_val, target_val in val_loader:
                     input_val, target_val = input_val.to(device), target_val.to(device)
                     val_output = model(input_val)
-                    val_plr += profit_loss_torch(target_val.cpu(), val_output.cpu()).item()
+                    val_plr += accuracy_torch(target_val.cpu(), val_output.cpu()).item()
 
             val_plr /= len(val_loader)
 
@@ -180,7 +180,7 @@ def conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_sy
                     for input_val, target_val in val_loader:
                         input_val, target_val = input_val.to(device), target_val.to(device)
                         val_output = model(input_val)
-                        val_plr += profit_loss_torch(target_val.cpu(), val_output.cpu()).item()
+                        val_plr += accuracy_torch(target_val.cpu(), val_output.cpu()).item()
 
                 val_plr /= len(val_loader)
 
@@ -209,16 +209,24 @@ def conv1d_lstm_regression_resume_training(X, y, gpu_available, ticker_symbol, h
     if delete_old_data:
         delete_hyperparameter_search_model(ticker_symbol, Model_Type)
 
-    all_existed = True
+    hyperparameter_search_needed = False
     for i in range(1, 6):
         hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
         hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
-        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(hyperparameters_search_model_params_path):
-            all_existed = False
+        if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(
+                hyperparameters_search_model_params_path):
+            hyperparameter_search_needed = True
             break
 
-    if not all_existed or hyperparameter_search:
+    if hyperparameter_search:
+        ticker_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
+        column_name = f"{Model_Type}_5"
+        current_score = ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name].values[0]
+        if pd.isnull(current_score) or current_score < ACCEPTABLE_SCORE:
+            hyperparameter_search_needed = True
+
+    if hyperparameter_search_needed:
         conv1d_lstm_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
 
     for i in range(1, 6):
@@ -256,7 +264,6 @@ def conv1d_lstm_regression_predict(X, gpu_available, ticker_symbol, no=1):
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
     trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.pth'
     trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.json'
-    models_display_path = f'{Models_Display}{Model_Type}/{ticker_symbol}_{no}.png'
 
     # Check if the model exists
     if not os.path.exists(trained_model_path) or not os.path.exists(trained_model_params_path):

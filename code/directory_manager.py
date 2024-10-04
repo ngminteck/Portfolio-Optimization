@@ -7,9 +7,16 @@ Ticker_Trained_Model_Metrics_Csv = "../models/trained_models/ticker_trained_mode
 
 Hyperparameters_Search_Models_Folder = "../models/hyperparameters_search_models/"
 Trained_Models_Folder = "../models/trained_models/"
-Models_Display = "../models/models_display/"
-Feature_Importance_Folder = "../feature_importance/"
+Hyperparameters_Search_Feature_Importance_Folder = "../models/hyperparameters_search_models/feature_importance/"
+Trained_Models_Feature_Importance_Folder = "../models/trained_models/feature_importance/"
 Trained_Feature_Folder ='../trained_feature/'
+
+Ticker_Hyperparams_Model_Metrics_With_PCA_Csv = "../models_with_pca/hyperparameters_search_models/ticker_hyperparams_model_metrics.csv"
+Ticker_Trained_Model_Metrics_With_PCA_Csv = "../models_with_pca/trained_models/ticker_trained_model_metrics.csv"
+
+Hyperparameters_Search_Models_With_PCA_Folder = "../models_with_pca/hyperparameters_search_models/"
+Trained_Models_With_PCA_Folder = "../models_with_pca/trained_models/"
+Feature_Importance_With_PCA_Folder = "../feature_importance_with_pca/"
 
 def make_all_directory():
     os.makedirs('../models/hyperparameters_search_models/xgbrfclassifier', exist_ok=True)
@@ -42,20 +49,62 @@ def make_all_directory():
     os.makedirs('../models/trained_models/conv1d_lstm_classification', exist_ok=True)
     os.makedirs('../models/trained_models/conv1d_lstm_regression', exist_ok=True)
 
-    os.makedirs('../feature_importance/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../feature_importance/xgbrfregressor', exist_ok=True)
-    os.makedirs('../feature_importance/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../feature_importance/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/feature_importance/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/feature_importance/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/feature_importance/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models/hyperparameters_search_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/trained_models/feature_importance/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models/trained_models/feature_importance/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/trained_models/feature_importance/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models/trained_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
 
     os.makedirs('../data/all', exist_ok=True)
     os.makedirs('../data/train', exist_ok=True)
     os.makedirs('../data/test', exist_ok=True)
 
     os.makedirs('../data/commodities_historical_data/original', exist_ok=True)
-
     os.makedirs('../trained_feature', exist_ok=True)
+    os.makedirs('../predicted_output/ticker', exist_ok=True)
 
-    os.makedirs('../result/ticker', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/grnn_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/grnn_regression', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/conv1d_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/conv1d_regression', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/lstm_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/lstm_regression', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/transformer_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/transformer_regression', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/conv1d_lstm_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/conv1d_lstm_regression', exist_ok=True)
+
+    os.makedirs('../models_with_pca/trained_models/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/grnn_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/grnn_regression', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/conv1d_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/conv1d_regression', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/lstm_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/lstm_regression', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/transformer_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/transformer_regression', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/conv1d_lstm_classification', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/conv1d_lstm_regression', exist_ok=True)
+
+    os.makedirs('../models_with_pca/hyperparameters_search_models/feature_importance/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/feature_importance/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/feature_importance/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models_with_pca/hyperparameters_search_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/feature_importance/xgbrfclassifier', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/feature_importance/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/feature_importance/xgbclassifier_gbtree', exist_ok=True)
+    os.makedirs('../models_with_pca/trained_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
+
 
 def rename_and_overwrite(old_path, new_path):
     # Check if the new model path already exists
@@ -205,39 +254,89 @@ def load_or_create_ticker_metric_df(csv_file_path):
     column_types = {
         "Ticker_Symbol": str,
 
-        "Top_1_RF_Sign_Accuracy_PERCENT": float,
-        "Top_5_RF_Sign_Accuracy_PERCENT": float,
-        "Top_1_GT_Sign_Accuracy_PERCENT": float,
-        "Top_5_GT_Sign_Accuracy_PERCENT": float,
-        "Top_1_GRNN_Sign_Accuracy_PERCENT": float,
-        "Top_5_GRNN_Sign_Accuracy_PERCENT": float,
-        "Top_1_CNN1D_Sign_Accuracy_PERCENT": float,
-        "Top_5_CNN1D_Sign_Accuracy_PERCENT": float,
-        "Top_1_LSTM_Sign_Accuracy_PERCENT": float,
-        "Top_5_LSTM_Sign_Accuracy_PERCENT": float,
-        "Top_1_CNN1D_LSTM_Sign_Accuracy_PERCENT": float,
-        "Top_5_CNN1D_LSTM_Sign_Accuracy_PERCENT": float,
-        "Top_1_Transformer_Sign_Accuracy_PERCENT": float,
-        "Top_5_Transformer_Sign_Accuracy_PERCENT": float,
-        "Top_1_Combined_Sign_Accuracy_PERCENT": float,
-        "Top_5_Combined_Sign_Accuracy_PERCENT": float,
+        "RF_1_Sign_Accuracy": float,
+        "RF_2_Sign_Accuracy": float,
+        "RF_3_Sign_Accuracy": float,
+        "RF_4_Sign_Accuracy": float,
+        "RF_5_Sign_Accuracy": float,
 
-        "Top_1_RF_Value_MPE_PERCENT": float,
-        "Top_5_RF_Value_MPE_PERCENT": float,
-        "Top_1_GT_Value_MPE_PERCENT": float,
-        "Top_5_GT_Value_MPE_PERCENT": float,
-        "Top_1_GRNN_Value_MPE_PERCENT": float,
-        "Top_5_GRNN_Value_MPE_PERCENT": float,
-        "Top_1_CNN1D_Value_MPE_PERCENT": float,
-        "Top_5_CNN1D_Value_MPE_PERCENT": float,
-        "Top_1_LSTM_Value_MPE_PERCENT": float,
-        "Top_5_LSTM_Value_MPE_PERCENT": float,
-        "Top_1_CNN1D_LSTM_Value_MPE_PERCENT": float,
-        "Top_5_CNN1D_LSTM_Value_MPE_PERCENT": float,
-        "Top_1_Transformer_Value_MPE_PERCENT": float,
-        "Top_5_Transformer_Value_MPE_PERCENT": float,
-        "Top_1_Combined_Value_MPE_PERCENT": float,
-        "Top_5_Combined_Value_MPE_PERCENT": float,
+        "GBT_1_Sign_Accuracy": float,
+        "GBT_2_Sign_Accuracy": float,
+        "GBT_3_Sign_Accuracy": float,
+        "GBT_4_Sign_Accuracy": float,
+        "GBT_5_Sign_Accuracy": float,
+
+        "GRNN_1_Sign_Accuracy": float,
+        "GRNN_2_Sign_Accuracy": float,
+        "GRNN_3_Sign_Accuracy": float,
+        "GRNN_4_Sign_Accuracy": float,
+        "GRNN_5_Sign_Accuracy": float,
+
+        "CNN_1_Sign_Accuracy": float,
+        "CNN_2_Sign_Accuracy": float,
+        "CNN_3_Sign_Accuracy": float,
+        "CNN_4_Sign_Accuracy": float,
+        "CNN_5_Sign_Accuracy": float,
+
+        "LSTM_1_Sign_Accuracy": float,
+        "LSTM_2_Sign_Accuracy": float,
+        "LSTM_3_Sign_Accuracy": float,
+        "LSTM_4_Sign_Accuracy": float,
+        "LSTM_5_Sign_Accuracy": float,
+
+        "CNN_LSTM_1_Sign_Accuracy": float,
+        "CNN_LSTM_2_Sign_Accuracy": float,
+        "CNN_LSTM_3_Sign_Accuracy": float,
+        "CNN_LSTM_4_Sign_Accuracy": float,
+        "CNN_LSTM_5_Sign_Accuracy": float,
+
+        "Transformer_1_Sign_Accuracy": float,
+        "Transformer_2_Sign_Accuracy": float,
+        "Transformer_3_Sign_Accuracy": float,
+        "Transformer_4_Sign_Accuracy": float,
+        "Transformer_5_Sign_Accuracy": float,
+
+        "RF_1_Profit_Loss": float,
+        "RF_2_Profit_Loss": float,
+        "RF_3_Profit_Loss": float,
+        "RF_4_Profit_Loss": float,
+        "RF_5_Profit_Loss": float,
+
+        "GBT_1_Profit_Loss": float,
+        "GBT_2_Profit_Loss": float,
+        "GBT_3_Profit_Loss": float,
+        "GBT_4_Profit_Loss": float,
+        "GBT_5_Profit_Loss": float,
+
+        "GRNN_1_Profit_Loss": float,
+        "GRNN_2_Profit_Loss": float,
+        "GRNN_3_Profit_Loss": float,
+        "GRNN_4_Profit_Loss": float,
+        "GRNN_5_Profit_Loss": float,
+
+        "CNN_1_Profit_Loss": float,
+        "CNN_2_Profit_Loss": float,
+        "CNN_3_Profit_Loss": float,
+        "CNN_4_Profit_Loss": float,
+        "CNN_5_Profit_Loss": float,
+
+        "LSTM_1_Profit_Loss": float,
+        "LSTM_2_Profit_Loss": float,
+        "LSTM_3_Profit_Loss": float,
+        "LSTM_4_Profit_Loss": float,
+        "LSTM_5_Profit_Loss": float,
+
+        "CNN_LSTM_1_Profit_Loss": float,
+        "CNN_LSTM_2_Profit_Loss": float,
+        "CNN_LSTM_3_Profit_Loss": float,
+        "CNN_LSTM_4_Profit_Loss": float,
+        "CNN_LSTM_5_Profit_Loss": float,
+
+        "Transformer_1_Profit_Loss": float,
+        "Transformer_2_Profit_Loss": float,
+        "Transformer_3_Profit_Loss": float,
+        "Transformer_4_Profit_Loss": float,
+        "Transformer_5_Profit_Loss": float,
 
     }
 

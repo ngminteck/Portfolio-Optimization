@@ -1,1 +1,1 @@
-{"sequence_length": 6, "hidden_size": 124, "num_layers": 1, "num_blocks": 2, "dropout_rate": 0.11961440475760306, "lr": 0.04580318526380293, "batch_size": 141, "l2_lambda": 0.006896509787782924}
+{"sequence_length": 29, "hidden_size": 118, "num_layers": 2, "num_blocks": 2, "dropout_rate": 0.27424325682803086, "lr": 0.05451714839982811, "batch_size": 18, "l2_lambda": 0.007446661456087467}
