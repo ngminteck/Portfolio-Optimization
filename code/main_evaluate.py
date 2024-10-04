@@ -11,7 +11,7 @@ from cov1d_lstm_regression import *
 from directory_manager import *
 from metric import *
 
-def main_evaluate():
+def main_evaluate(pca=False):
     def is_gpu_available():
         try:
             import torch
@@ -28,6 +28,10 @@ def main_evaluate():
     if os.path.exists(path):
         ticker_list = [os.path.splitext(f)[0] for f in os.listdir(path) if f.endswith('.csv')]
 
+    Root_Folder = "../predicted_output/scaler/"
+    if pca:
+        Root_Folder = "../predicted_output/pca/"
+
     for ticker_symbol in ticker_list:
 
         xgbrfregressor_regression_df = []
@@ -38,12 +42,12 @@ def main_evaluate():
         conv1d_lstm_regression_df = []
         transformer_regression_df = []
 
-        X, y, y_scaler = predict_preprocess_data(ticker_symbol)
+        X, y, y_scaler = predict_preprocess_data(ticker_symbol, pca)
 
         predict_error = False
 
         for i in range(1, 6):
-            result = xgbrfregressor_predict(X, ticker_symbol, i)
+            result = xgbrfregressor_predict(X, ticker_symbol, pca, i)
             if result is None:
                 predict_error = True
                 print(f"{ticker_symbol} encounter prediction error in RF")
@@ -52,7 +56,7 @@ def main_evaluate():
             result.iloc[:, 0] = inverse_transformed[:, 0].astype('float32')
             xgbrfregressor_regression_df.append(result)
 
-            result = xgbregressor_gbtree_predict(X, ticker_symbol, i)
+            result = xgbregressor_gbtree_predict(X, ticker_symbol, pca, i)
             if result is None:
                 predict_error = True
                 print(f"{ticker_symbol} encounter prediction error in GT")
@@ -61,7 +65,7 @@ def main_evaluate():
             result.iloc[:, 0] = inverse_transformed[:, 0].astype('float32')
             xgbregressor_regression_df.append(result)
 
-            result = grnn_regression_predict(X, gpu_available, ticker_symbol, i)
+            result = grnn_regression_predict(X, gpu_available, ticker_symbol, pca, i)
             if result is None:
                 predict_error = True
                 print(f"{ticker_symbol} encounter prediction error in GRNN")
@@ -70,7 +74,7 @@ def main_evaluate():
             result.iloc[:, 0] = inverse_transformed[:, 0].astype('float32')
             grnn_regression_df.append(result)
 
-            result = conv1d_regression_predict(X, gpu_available, ticker_symbol, i)
+            result = conv1d_regression_predict(X, gpu_available, ticker_symbol, pca, i)
             if result is None:
                 predict_error = True
                 print(f"{ticker_symbol} encounter prediction error in CNN1D")
@@ -79,7 +83,7 @@ def main_evaluate():
             result.iloc[:, 0] = inverse_transformed[:, 0].astype('float32')
             conv1d_regression_df.append(result)
 
-            result = lstm_regression_predict(X, gpu_available, ticker_symbol, i)
+            result = lstm_regression_predict(X, gpu_available, ticker_symbol, pca, i)
             if result is None:
                 predict_error = True
                 print(f"{ticker_symbol} encounter prediction error in LSTM")
@@ -88,7 +92,7 @@ def main_evaluate():
             result.iloc[:, 0] = inverse_transformed[:, 0].astype('float32')
             lstm_regression_df.append(result)
 
-            result = conv1d_lstm_regression_predict(X, gpu_available, ticker_symbol, i)
+            result = conv1d_lstm_regression_predict(X, gpu_available, ticker_symbol, pca, i)
             if result is None:
                 predict_error = True
                 print(f"{ticker_symbol} encounter prediction error in CNN LSTM")
@@ -121,7 +125,7 @@ def main_evaluate():
         xgbregressor_regression_df = [df.iloc[-min_rows:] for df in xgbregressor_regression_df]
         grnn_regression_df = [df.iloc[-min_rows:] for df in grnn_regression_df]
 
-        ticker_df = load_or_create_ticker_metric_df('../predicted_output/ticker_metrics.csv')
+        ticker_df = load_or_create_ticker_metric_df(Root_Folder + 'ticker_metrics.csv')
         if ticker_symbol not in ticker_df['Ticker_Symbol'].values:
             # Create a new DataFrame for the new row
             new_row = pd.DataFrame({'Ticker_Symbol': [ticker_symbol]})
@@ -202,8 +206,8 @@ def main_evaluate():
             column_name = f"CNN_LSTM_{i}_Predicted_Close_Price_Change"
             predict_df[column_name] = conv1d_lstm_regression_df[i - 1].iloc[:, 0].values
 
-        predict_df.to_csv(f'../predicted_output/ticker/{ticker_symbol}.csv', index=False)
-        ticker_df.to_csv(f'../predicted_output/ticker_metrics.csv', index=False)
+        predict_df.to_csv(f'{Root_Folder}ticker/{ticker_symbol}.csv', index=False)
+        ticker_df.to_csv(f'{Root_Folder}ticker_metrics.csv', index=False)
         print(f"{ticker_symbol} done evaluate.")
 
 

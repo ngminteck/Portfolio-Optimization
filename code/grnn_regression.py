@@ -15,7 +15,11 @@ from metric import *
 Model_Type = "grnn_regression"
 
 
-def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
+def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol, pca):
+    Root_Folder = Model_Scaler_Folder
+    if pca:
+        Root_Folder = Model_PCA_Folder
+
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
 
     # Convert to tensors directly
@@ -97,7 +101,7 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     for i in range(0, 5):
         metrics[f'new_{i}'] = sorted_trials[i].value
 
-    ticker_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
+    ticker_df = load_or_create_ticker_df(Root_Folder + Ticker_Hyperparams_Model_Metrics_Csv)
     # Check if the ticker_symbol exists
     if ticker_symbol not in ticker_df['Ticker_Symbol'].values:
         # Create a new DataFrame for the new row
@@ -107,10 +111,10 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
 
     if ticker_symbol in ticker_df['Ticker_Symbol'].values:
         for i in range(1, 6):
-            hyperparameter_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-            hyperparameter_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
-            model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-            params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+            hyperparameter_model_path = f'{Root_Folder}{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+            hyperparameter_params_path = f'{Root_Folder}{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+            model_path = f'{Root_Folder}{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+            params_path = f'{Root_Folder}{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
             column_name = f"{Model_Type}_{i}"
             current_score = ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name].values[0]
             if not pd.isnull(current_score) and \
@@ -126,14 +130,14 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
     for i in range(4, -1, -1):
         key, value = sorted_metrics_list[i]
         rank = i + 1
-        new_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{rank}.pth'
-        new_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{rank}.json'
+        new_model_path = f'{Root_Folder}{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{rank}.pth'
+        new_params_path = f'{Root_Folder}{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{rank}.json'
 
         if key.startswith('old'):
             # Extract the index from the key using split method
             old_index = key.split('_')[1]
-            old_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pth'
-            old_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
+            old_model_path = f'{Root_Folder}{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.pth'
+            old_params_path = f'{Root_Folder}{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{old_index}.json'
 
             rename_and_overwrite(old_model_path, new_model_path)
             rename_and_overwrite(old_params_path, new_params_path)
@@ -196,18 +200,22 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol):
         ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = value
 
     # Save the updated ticker_df back to the CSV
-    ticker_df.to_csv(Ticker_Hyperparams_Model_Metrics_Csv, index=False)
+    ticker_df.to_csv(Root_Folder + Ticker_Hyperparams_Model_Metrics_Csv, index=False)
 
 
-def grnn_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperparameter_search=False,
+def grnn_regression_resume_training(X, y, gpu_available, ticker_symbol, pca=False, hyperparameter_search=False,
                                     delete_old_data=False):
+    Root_Folder = Model_Scaler_Folder
+    if pca:
+        Root_Folder = Model_PCA_Folder
+
     if delete_old_data:
-        delete_hyperparameter_search_model(ticker_symbol, Model_Type)
+        delete_hyperparameter_search_model(ticker_symbol, Model_Type, pca)
 
     hyperparameter_search_needed = False
     for i in range(1, 6):
-        hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        hyperparameters_search_model_path = f'{Root_Folder}{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+        hyperparameters_search_model_params_path = f'{Root_Folder}{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
         if not os.path.exists(hyperparameters_search_model_path) or not os.path.exists(
                 hyperparameters_search_model_params_path):
@@ -215,28 +223,28 @@ def grnn_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperpar
             break
 
     if hyperparameter_search:
-        ticker_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
+        ticker_df = load_or_create_ticker_df(Root_Folder + Ticker_Hyperparams_Model_Metrics_Csv)
         column_name = f"{Model_Type}_5"
         current_score = ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name].values[0]
         if pd.isnull(current_score) or current_score < ACCEPTABLE_SCORE:
             hyperparameter_search_needed = True
 
     if hyperparameter_search_needed:
-        grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol)
+        grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol, pca)
 
     for i in range(1, 6):
-        hyperparameters_search_model_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
-        trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+        hyperparameters_search_model_path = f'{Root_Folder}{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
+        trained_model_path = f'{Root_Folder}{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.pth'
 
-        hyperparameters_search_model_params_path = f'{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
-        trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        hyperparameters_search_model_params_path = f'{Root_Folder}{Hyperparameters_Search_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
+        trained_model_params_path = f'{Root_Folder}{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{i}.json'
 
         shutil.copy2(hyperparameters_search_model_path, trained_model_path)
         shutil.copy2(hyperparameters_search_model_params_path, trained_model_params_path)
 
-    hyperparameters_search_model_df = load_or_create_ticker_df(Ticker_Hyperparams_Model_Metrics_Csv)
+    hyperparameters_search_model_df = load_or_create_ticker_df(Root_Folder + Ticker_Hyperparams_Model_Metrics_Csv)
 
-    trained_model_df = load_or_create_ticker_df(Ticker_Trained_Model_Metrics_Csv)
+    trained_model_df = load_or_create_ticker_df(Root_Folder + Ticker_Trained_Model_Metrics_Csv)
     if ticker_symbol not in trained_model_df['Ticker_Symbol'].values:
         # Create a new DataFrame for the new row
         new_row = pd.DataFrame({'Ticker_Symbol': [ticker_symbol]})
@@ -253,13 +261,19 @@ def grnn_regression_resume_training(X, y, gpu_available, ticker_symbol, hyperpar
             hyperparameters_search_model_df.loc[
                 hyperparameters_search_model_df['Ticker_Symbol'] == ticker_symbol, column].values[0]
 
-    trained_model_df.to_csv(Ticker_Trained_Model_Metrics_Csv, index=False)
+    trained_model_df.to_csv(Root_Folder + Ticker_Trained_Model_Metrics_Csv, index=False)
 
-
-def grnn_regression_predict(X, gpu_available, ticker_symbol, no=1):
+def grnn_regression_predict(X, gpu_available, ticker_symbol, pca=False, no=1):
     device = torch.device('cuda' if gpu_available and torch.cuda.is_available() else 'cpu')
-    trained_model_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.pth'
-    trained_model_params_path = f'{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.json'
+
+    Root_Folder = Model_Scaler_Folder
+    if pca:
+        Root_Folder = Model_PCA_Folder
+
+    trained_model_path = f'{Root_Folder}{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.pth'
+    trained_model_params_path = f'{Root_Folder}{Trained_Models_Folder}{Model_Type}/{ticker_symbol}_{no}.json'
+
+
 
     # Check if the model exists
     if not os.path.exists(trained_model_path) or not os.path.exists(trained_model_params_path):

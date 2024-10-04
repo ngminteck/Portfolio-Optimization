@@ -1,0 +1,15 @@
+pandas==2.2.2
+numpy==1.26.4
+yfinance==0.2.41
+ta-lib==0.4.32
+urllib3==2.2.2
+feedparser==6.0.11
+nltk==3.8.1
+torch==2.0.1+cu124 --index-url https://download.pytorch.org/whl/cu124
+torchvision==0.15.2+cu124 --index-url https://download.pytorch.org/whl/cu124
+torchaudio==2.0.2+cu124 --index-url https://download.pytorch.org/whl/cu124
+xgboost==2.1.1
+scikit-learn==1.5.1
+optuna==4.0.0
+jalib==1.4.
+matplotlib==3.8.4

@@ -2,108 +2,75 @@ import os
 import glob
 import pandas as pd
 
-Ticker_Hyperparams_Model_Metrics_Csv = "../models/hyperparameters_search_models/ticker_hyperparams_model_metrics.csv"
-Ticker_Trained_Model_Metrics_Csv = "../models/trained_models/ticker_trained_model_metrics.csv"
+Model_Scaler_Folder = "../models/scaler/"
+Model_PCA_Folder = "../models/pca/"
 
-Hyperparameters_Search_Models_Folder = "../models/hyperparameters_search_models/"
-Trained_Models_Folder = "../models/trained_models/"
-Hyperparameters_Search_Feature_Importance_Folder = "../models/hyperparameters_search_models/feature_importance/"
-Trained_Models_Feature_Importance_Folder = "../models/trained_models/feature_importance/"
-Trained_Feature_Folder ='../trained_feature/'
+Ticker_Hyperparams_Model_Metrics_Csv = "hyperparameters_search_models/ticker_hyperparams_model_metrics.csv"
+Ticker_Trained_Model_Metrics_Csv = "trained_models/ticker_trained_model_metrics.csv"
 
-Ticker_Hyperparams_Model_Metrics_With_PCA_Csv = "../models_with_pca/hyperparameters_search_models/ticker_hyperparams_model_metrics.csv"
-Ticker_Trained_Model_Metrics_With_PCA_Csv = "../models_with_pca/trained_models/ticker_trained_model_metrics.csv"
+Hyperparameters_Search_Models_Folder = "hyperparameters_search_models/"
+Trained_Models_Folder = "trained_models/"
 
-Hyperparameters_Search_Models_With_PCA_Folder = "../models_with_pca/hyperparameters_search_models/"
-Trained_Models_With_PCA_Folder = "../models_with_pca/trained_models/"
-Feature_Importance_With_PCA_Folder = "../feature_importance_with_pca/"
+Hyperparameters_Search_Feature_Importance_Folder = "hyperparameters_search_models/feature_importance/"
+Trained_Models_Feature_Importance_Folder = "trained_models/feature_importance/"
+
+Trained_Feature_Folder ='../data/trained_feature/'
+PCA_Folder = '../data/pca/'
 
 def make_all_directory():
-    os.makedirs('../models/hyperparameters_search_models/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/grnn_classification', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/grnn_regression', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/conv1d_classification', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/conv1d_regression', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/lstm_classification', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/lstm_regression', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/transformer_classification', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/transformer_regression', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_classification', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/conv1d_lstm_regression', exist_ok=True)
 
-    os.makedirs('../models/trained_models/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models/trained_models/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models/trained_models/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models/trained_models/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../models/trained_models/grnn_classification', exist_ok=True)
-    os.makedirs('../models/trained_models/grnn_regression', exist_ok=True)
-    os.makedirs('../models/trained_models/conv1d_classification', exist_ok=True)
-    os.makedirs('../models/trained_models/conv1d_regression', exist_ok=True)
-    os.makedirs('../models/trained_models/lstm_classification', exist_ok=True)
-    os.makedirs('../models/trained_models/lstm_regression', exist_ok=True)
-    os.makedirs('../models/trained_models/transformer_classification', exist_ok=True)
-    os.makedirs('../models/trained_models/transformer_regression', exist_ok=True)
-    os.makedirs('../models/trained_models/conv1d_lstm_classification', exist_ok=True)
-    os.makedirs('../models/trained_models/conv1d_lstm_regression', exist_ok=True)
+    os.makedirs('../models/scaler/hyperparameters_search_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/scaler/hyperparameters_search_models/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/scaler/hyperparameters_search_models/grnn_regression', exist_ok=True)
+    os.makedirs('../models/scaler/hyperparameters_search_models/conv1d_regression', exist_ok=True)
+    os.makedirs('../models/scaler/hyperparameters_search_models/lstm_regression', exist_ok=True)
+    os.makedirs('../models/scaler/hyperparameters_search_models/transformer_regression', exist_ok=True)
+    os.makedirs('../models/scaler/hyperparameters_search_models/conv1d_lstm_regression', exist_ok=True)
 
-    os.makedirs('../models/hyperparameters_search_models/feature_importance/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/feature_importance/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/feature_importance/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models/hyperparameters_search_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../models/trained_models/feature_importance/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models/trained_models/feature_importance/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models/trained_models/feature_importance/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models/trained_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/scaler/trained_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/scaler/trained_models/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/scaler/trained_models/grnn_regression', exist_ok=True)
+    os.makedirs('../models/scaler/trained_models/conv1d_regression', exist_ok=True)
+    os.makedirs('../models/scaler/trained_models/lstm_regression', exist_ok=True)
+    os.makedirs('../models/scaler/trained_models/transformer_regression', exist_ok=True)
+    os.makedirs('../models/scaler/trained_models/conv1d_lstm_regression', exist_ok=True)
+
+    os.makedirs('../models/scaler/hyperparameters_search_models/feature_importance/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/scaler/hyperparameters_search_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/scaler/trained_models/feature_importance/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/scaler/trained_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
+
+    os.makedirs('../models/pca/hyperparameters_search_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/pca/hyperparameters_search_models/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/pca/hyperparameters_search_models/grnn_regression', exist_ok=True)
+    os.makedirs('../models/pca/hyperparameters_search_models/conv1d_regression', exist_ok=True)
+    os.makedirs('../models/pca/hyperparameters_search_models/lstm_regression', exist_ok=True)
+    os.makedirs('../models/pca/hyperparameters_search_models/transformer_regression', exist_ok=True)
+    os.makedirs('../models/pca/hyperparameters_search_models/conv1d_lstm_regression', exist_ok=True)
+
+    os.makedirs('../models/pca/trained_models/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/pca/trained_models/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/pca/trained_models/grnn_regression', exist_ok=True)
+    os.makedirs('../models/pca/trained_models/conv1d_regression', exist_ok=True)
+    os.makedirs('../models/pca/trained_models/lstm_regression', exist_ok=True)
+    os.makedirs('../models/pca/trained_models/transformer_regression', exist_ok=True)
+    os.makedirs('../models/pca/trained_models/conv1d_lstm_regression', exist_ok=True)
+
+    os.makedirs('../models/pca/hyperparameters_search_models/feature_importance/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/pca/hyperparameters_search_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
+    os.makedirs('../models/pca/trained_models/feature_importance/xgbrfregressor', exist_ok=True)
+    os.makedirs('../models/pca/trained_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
 
     os.makedirs('../data/all', exist_ok=True)
     os.makedirs('../data/train', exist_ok=True)
     os.makedirs('../data/test', exist_ok=True)
 
     os.makedirs('../data/commodities_historical_data/original', exist_ok=True)
-    os.makedirs('../trained_feature', exist_ok=True)
-    os.makedirs('../predicted_output/ticker', exist_ok=True)
+    os.makedirs('../data/trained_feature', exist_ok=True)
+    os.makedirs('../data/pca', exist_ok=True)
+    os.makedirs('../predicted_output/scaler/ticker', exist_ok=True)
+    os.makedirs('../predicted_output/pca/ticker', exist_ok=True)
 
-    os.makedirs('../models_with_pca/hyperparameters_search_models/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/grnn_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/grnn_regression', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/conv1d_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/conv1d_regression', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/lstm_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/lstm_regression', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/transformer_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/transformer_regression', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/conv1d_lstm_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/conv1d_lstm_regression', exist_ok=True)
-
-    os.makedirs('../models_with_pca/trained_models/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/grnn_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/grnn_regression', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/conv1d_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/conv1d_regression', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/lstm_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/lstm_regression', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/transformer_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/transformer_regression', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/conv1d_lstm_classification', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/conv1d_lstm_regression', exist_ok=True)
-
-    os.makedirs('../models_with_pca/hyperparameters_search_models/feature_importance/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/feature_importance/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/feature_importance/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models_with_pca/hyperparameters_search_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/feature_importance/xgbrfclassifier', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/feature_importance/xgbrfregressor', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/feature_importance/xgbclassifier_gbtree', exist_ok=True)
-    os.makedirs('../models_with_pca/trained_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
 
 
 def rename_and_overwrite(old_path, new_path):
@@ -218,9 +185,14 @@ def load_or_create_ticker_df(csv_file_path):
     return ticker_df
 
 
-def delete_hyperparameter_search_model(ticker_symbol, model_type):
+def delete_hyperparameter_search_model(ticker_symbol, model_type, PCA):
 
-    model_path_folder = Hyperparameters_Search_Models_Folder + model_type + '/'
+    Root_Folder = Model_Scaler_Folder
+
+    if PCA:
+        Root_Folder = Model_PCA_Folder
+
+    model_path_folder = Root_Folder + Hyperparameters_Search_Models_Folder + model_type + '/'
 
     # Delete model files
     for i in range(1, 6):
@@ -232,22 +204,22 @@ def delete_hyperparameter_search_model(ticker_symbol, model_type):
             except OSError as e:
                 print(f"Error: {filename} : {e.strerror}")
 
-    # Update CSV file
-    if os.path.isfile(Ticker_Hyperparams_Model_Metrics_Csv):
+    csv_path = Root_Folder + Ticker_Hyperparams_Model_Metrics_Csv
+    if os.path.isfile(csv_path):
         try:
-            ticker_df = pd.read_csv(Ticker_Hyperparams_Model_Metrics_Csv)
+            ticker_df = pd.read_csv(csv_path)
             if ticker_symbol in ticker_df['Ticker_Symbol'].values:
                 ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol,
                 [f'{model_type}_1', f'{model_type}_2', f'{model_type}_3', f'{model_type}_4', f'{model_type}_5']] \
                     = [pd.NA, pd.NA, pd.NA, pd.NA, pd.NA]
-                ticker_df.to_csv(Ticker_Hyperparams_Model_Metrics_Csv, index=False)
-                print(f"Deleted {ticker_symbol} from {Ticker_Hyperparams_Model_Metrics_Csv}")
+                ticker_df.to_csv(csv_path, index=False)
+                print(f"Deleted {ticker_symbol} from {csv_path}")
             else:
-                print(f"{ticker_symbol} not found in {Ticker_Hyperparams_Model_Metrics_Csv}")
+                print(f"{ticker_symbol} not found in {csv_path}")
         except Exception as e:
             print(f"Error processing CSV file: {e}")
     else:
-        print(f"{Ticker_Hyperparams_Model_Metrics_Csv} does not exist")
+        print(f"{csv_path} does not exist")
 
 def load_or_create_ticker_metric_df(csv_file_path):
     # Define the column types
