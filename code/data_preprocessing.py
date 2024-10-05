@@ -207,8 +207,8 @@ division_hundred_columns = [
 sentiment_columns = ['scaled_NET_SENTIMENT', 'scaled_UNCERTAINTY_MODAL', 'scaled_REGULATORY_PRESSURE']
 
 main_colums = [
-    "Open", "High", "Low", "Close", "Volume", "Change", "Wave", "EFP Volume", "EFS Volume",
-    "Block Volume", "Last", "Previous Day Open Interest"
+    "Date", "Open", "High", "Low", "Close", "Volume", "Change", "Wave", "EFP Volume", "EFS Volume",
+    "Block Volume", "Last", "Previous Day Open Interest", "DAILY_CLOSEPRICE_CHANGE"
 ]
 
 def training_preprocess_data(ticker_symbol, PCA):
@@ -235,15 +235,15 @@ def training_preprocess_data(ticker_symbol, PCA):
         sentiment_data = df[columns_to_append].reset_index(drop=True)
         X = pd.concat([X, sentiment_data], axis=1)
 
+    X = X.drop(X.columns[99:162], axis=1)
+
     columns_to_drop = [
-        'NEXT_DAY_CLOSEPRICE', 'DAILY_CLOSEPRICE_CHANGE', 'DAILY_CLOSEPRICE_CHANGE_PERCENT',
+        'NEXT_DAY_CLOSEPRICE', 'DAILY_CLOSEPRICE_CHANGE_PERCENT',
         'DAILY_CLOSEPRICE_DIRECTION',
         'DAILY_MIDPRICE', 'NEXT_DAY_MIDPRICE', 'DAILY_MIDPRICE_CHANGE', 'DAILY_MIDPRICE_CHANGE_PERCENT',
         'DAILY_MIDPRICE_DIRECTION',
-        'Date',
     ]
     X = X.drop(columns=columns_to_drop)
-    X = X.drop(X.columns[98:161], axis=1)
 
     # Drop columns with only one unique value
     X = X.loc[:, X.nunique() > 1]
@@ -254,6 +254,7 @@ def training_preprocess_data(ticker_symbol, PCA):
     columns_to_standard_scale = [col for col in standard_scaled_columns if col in X.columns]
     X_scaler = StandardScaler()
     X[columns_to_standard_scale] = X_scaler.fit_transform(X[columns_to_standard_scale])
+    X.to_csv(f'{Trained_Feature_Folder}{ticker_symbol}.csv', index=False)
 
     if PCA:
         pca_excluded_columns = main_colums + sentiment_columns
@@ -267,11 +268,9 @@ def training_preprocess_data(ticker_symbol, PCA):
         main_df = pd.concat([main_df, pca_df], axis=1)
         X = main_df
         X.to_csv(f'{PCA_Folder}{ticker_symbol}.csv', index=False)
-    else:
-        file = f'{Trained_Feature_Folder}{ticker_symbol}.txt'
-        with open(file, 'w') as f:
-            for col in X.columns:
-                f.write(col + '\n')
+
+    X = X.drop('DAILY_CLOSEPRICE_CHANGE', axis=1)
+    X = X.drop('Date', axis=1)
 
     print(X.shape)
     print(y_regressor_scaled.shape)
@@ -279,41 +278,24 @@ def training_preprocess_data(ticker_symbol, PCA):
     return X, y_regressor_scaled
 
 def predict_preprocess_data(ticker_symbol, PCA):
-    df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
 
-    # Select the last row and make a deep copy
-    #last_row_copy = df.iloc[-1].copy(deep=True)
+    if PCA:
+        X = pd.read_csv(f'{PCA_Folder}{ticker_symbol}.csv')
+    else:
+        X = pd.read_csv(f'{Trained_Feature_Folder}{ticker_symbol}.csv')
+
+    X = X.drop('DAILY_CLOSEPRICE_CHANGE', axis=1)
+    X = X.drop('Date', axis=1)
+
+    df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
 
     # Handle missing and infinite values
     if df.isna().sum().sum() > 0 or df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
         df = df.replace([float('inf'), float('-inf')], np.nan).dropna()
 
-    # Convert the last row copy to a DataFrame
-    #last_row_copy = pd.DataFrame([last_row_copy], columns=df.columns)
-
-    # Concatenate the DataFrame with the last row copy, no need from our case as is 2015 to 2021
-    #df = pd.concat([df, last_row_copy], axis=0, ignore_index=True)
-
-    # Scale the target variable
     y_scaler = StandardScaler()
     y_regressor = df[['DAILY_CLOSEPRICE_CHANGE']]  # Convert to DataFrame
     y_regressor_scaled = pd.DataFrame(y_scaler.fit_transform(y_regressor), columns=y_regressor.columns)
-
-    if PCA:
-        X = pd.read_csv(f'{PCA_Folder}{ticker_symbol}.csv')
-    else:
-        file = f'{Trained_Feature_Folder}{ticker_symbol}.txt'
-        with open(file, 'r') as f:
-            column_names = f.read().splitlines()
-
-        X = df.filter(column_names).copy()
-
-        columns_to_divide_by_100 = [col for col in division_hundred_columns if col in X.columns]
-        X[columns_to_divide_by_100] = X[columns_to_divide_by_100] / 100
-
-        columns_to_standard_scale = [col for col in standard_scaled_columns if col in X.columns]
-        X_scaler = StandardScaler()
-        X[columns_to_standard_scale] = X_scaler.fit_transform(X[columns_to_standard_scale])
 
     print(X.shape)
     print(y_regressor_scaled.shape)
