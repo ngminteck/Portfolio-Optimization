@@ -1,0 +1,20 @@
+digraph {
+	graph [size="12,12"]
+	node [align=left fontname=monospace fontsize=10 height=0.2 ranksep=0.1 shape=box style=filled]
+	2478001843296 [label="
+ (1, 1)" fillcolor=darkolivegreen1]
+	2478001677904 [label=AddmmBackward0]
+	2477299041904 -> 2478001677904
+	2476876239312 [label="linear.bias
+ (1)" fillcolor=lightblue]
+	2476876239312 -> 2477299041904
+	2477299041904 [label=AccumulateGrad]
+	2477299052320 -> 2478001677904
+	2477299052320 [label=TBackward0]
+	2478001763904 -> 2477299052320
+	2477299122656 [label="linear.weight
+ (1, 101)" fillcolor=lightblue]
+	2477299122656 -> 2478001763904
+	2478001763904 [label=AccumulateGrad]
+	2478001677904 -> 2478001843296
+}
