@@ -132,81 +132,93 @@ def main_evaluate(pca=False):
             # Concatenate the new row to the existing DataFrame
             ticker_df = pd.concat([ticker_df, new_row], ignore_index=True)
 
-        df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
+        unscaled_df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
 
-        if df.isna().sum().sum() > 0 or df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
-            df = df.replace([float('inf'), float('-inf')], np.nan).dropna()
+        # Handle missing and infinite values
+        if unscaled_df.isna().sum().sum() > 0 or unscaled_df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
+            unscaled_df = unscaled_df.replace([float('inf'), float('-inf')], np.nan).dropna()
 
-        predict_df = df[['Date', 'DAILY_CLOSEPRICE_CHANGE']].copy(deep=True)
-        y = y.iloc[-min_rows:]
-        predict_df = predict_df.iloc[-min_rows:]
-        are_columns_same = predict_df['DAILY_CLOSEPRICE_CHANGE'].equals(y['DAILY_CLOSEPRICE_CHANGE'])
-        print(are_columns_same)
+        unscaled_df.reset_index(drop=True, inplace=True)
+        unscaled_df = unscaled_df.iloc[-min_rows:]
+
+        df = pd.read_csv(f'{Trained_Feature_Folder}{ticker_symbol}.csv')
+        if pca:
+            df = pd.read_csv(f'{PCA_Folder}{ticker_symbol}.csv')
+
+        df = df.iloc[-min_rows:]
+
+        # Filter columns that are present in both dataframes
+        common_columns = unscaled_df.columns.intersection(df.columns)
+
+        # Copy data from unscaled_df to df for common columns
+        df[common_columns] = unscaled_df[common_columns]
+
         # List of model prefixes
         models = ['RF', 'GBT', 'GRNN', 'CNN', 'LSTM', 'CNN_LSTM']
 
-        # Add columns for each model
-        for model in models:
-            for i in range(1, 6):
-                column_name = f'{model}_{i}_Predicted_Close_Price_Change'
-                predict_df[column_name] = np.nan
+        # Create a DataFrame with the new columns
+        new_columns = {f'{model}_{i}_Predicted_Close_Price_Change': np.nan for model in models for i in range(1, 6)}
+        new_df = pd.DataFrame(new_columns, index=df.index)
+
+        # Concatenate the new columns to the original DataFrame
+        df = pd.concat([df, new_df], axis=1)
 
         for i in range(1, 6):
             column_name = f"RF_{i}_Sign_Accuracy"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], xgbrfregressor_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], xgbrfregressor_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"RF_{i}_Profit_Loss"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], xgbrfregressor_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], xgbrfregressor_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"RF_{i}_Predicted_Close_Price_Change"
-            predict_df[column_name] = xgbrfregressor_regression_df[i - 1].iloc[:, 0].values
+            df[column_name] = xgbrfregressor_regression_df[i - 1].iloc[:, 0].values
 
             column_name = f"GBT_{i}_Sign_Accuracy"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], xgbregressor_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], xgbregressor_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"GBT_{i}_Profit_Loss"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], xgbregressor_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], xgbregressor_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"GBT_{i}_Predicted_Close_Price_Change"
-            predict_df[column_name] = xgbregressor_regression_df[i - 1].iloc[:, 0].values
+            df[column_name] = xgbregressor_regression_df[i - 1].iloc[:, 0].values
 
             column_name = f"GRNN_{i}_Sign_Accuracy"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], grnn_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], grnn_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"GRNN_{i}_Profit_Loss"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], grnn_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], grnn_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"GRNN_{i}_Predicted_Close_Price_Change"
-            predict_df[column_name] = grnn_regression_df[i - 1].iloc[:, 0].values
+            df[column_name] = grnn_regression_df[i - 1].iloc[:, 0].values
 
             column_name = f"CNN_{i}_Sign_Accuracy"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], conv1d_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], conv1d_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"CNN_{i}_Profit_Loss"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], conv1d_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], conv1d_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"CNN_{i}_Predicted_Close_Price_Change"
-            predict_df[column_name] = conv1d_regression_df[i - 1].iloc[:, 0].values
+            df[column_name] = conv1d_regression_df[i - 1].iloc[:, 0].values
 
             column_name = f"LSTM_{i}_Sign_Accuracy"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], lstm_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], lstm_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"LSTM_{i}_Profit_Loss"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], lstm_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], lstm_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"LSTM_{i}_Predicted_Close_Price_Change"
-            predict_df[column_name] = lstm_regression_df[i - 1].iloc[:, 0].values
+            df[column_name] = lstm_regression_df[i - 1].iloc[:, 0].values
 
             column_name = f"CNN_LSTM_{i}_Sign_Accuracy"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = accuracy_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], conv1d_lstm_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], conv1d_lstm_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"CNN_LSTM_{i}_Profit_Loss"
             ticker_df.loc[ticker_df['Ticker_Symbol'] == ticker_symbol, column_name] = profit_loss_np(
-                predict_df['DAILY_CLOSEPRICE_CHANGE'], conv1d_lstm_regression_df[i - 1].iloc[:, 0].values)
+                df['DAILY_CLOSEPRICE_CHANGE'], conv1d_lstm_regression_df[i - 1].iloc[:, 0].values)
             column_name = f"CNN_LSTM_{i}_Predicted_Close_Price_Change"
-            predict_df[column_name] = conv1d_lstm_regression_df[i - 1].iloc[:, 0].values
+            df[column_name] = conv1d_lstm_regression_df[i - 1].iloc[:, 0].values
 
-        predict_df.to_csv(f'{Root_Folder}ticker/{ticker_symbol}.csv', index=False)
+        df.to_csv(f'{Root_Folder}ticker/{ticker_symbol}.csv', index=False)
         ticker_df.to_csv(f'{Root_Folder}ticker_metrics.csv', index=False)
         print(f"{ticker_symbol} done evaluate.")
 

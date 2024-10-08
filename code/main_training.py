@@ -11,7 +11,7 @@ from cov1d_lstm_regression import *
 from transformer_regression import *
 
 
-def main_training(pca=False):
+def main_training(pca=False, run_hyperparameters=False):
     logical_cores = os.cpu_count()
     print(f"Number of logical CPU cores: {logical_cores}")
 
@@ -42,18 +42,15 @@ def main_training(pca=False):
         X, y_regressor = training_preprocess_data(ticker_symbol, pca)
 
 
-        # If you want to perform hyperparameter search and update the existing model:
-        # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, True)
-
         # If you want to start hyperparameter search from the beginning and delete old records (mostly needed if features and target have been changed):
-        # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, True, True)
+        # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, pca, run_hyperparameters, True)
 
-        xgbregressor_gbtree_resume_training(X, y_regressor, gpu_available, ticker_symbol,pca)
-        xgbrfregressor_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca)
-        grnn_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca)
-        conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca)
-        lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca)
-        conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca)
+        xgbregressor_gbtree_resume_training(X, y_regressor, gpu_available, ticker_symbol,pca, run_hyperparameters)
+        xgbrfregressor_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca, run_hyperparameters)
+        grnn_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca, run_hyperparameters)
+        conv1d_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca, run_hyperparameters)
+        lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca, run_hyperparameters)
+        conv1d_lstm_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol, pca, run_hyperparameters)
         #transformer_regression_resume_training(X, y_regressor, gpu_available, ticker_symbol)
 
 

@@ -50,7 +50,7 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol, p
         train_loader = DataLoader(TensorDataset(X_train, y_train), batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(TensorDataset(X_val, y_val), batch_size=batch_size, shuffle=False)
 
-        best_val_plr = -np.inf
+        best_val_acc = -np.inf
         for epoch in range(epochs):
             model.train()
             for input_train, target_train in train_loader:
@@ -62,24 +62,24 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol, p
                 optimizer.step()
 
             model.eval()
-            val_plr = 0
+            val_acc = 0
             with torch.no_grad():
                 for input_val, target_val in val_loader:
                     input_val, target_val = input_val.to(device), target_val.to(device)
                     val_output = model(input_val)
-                    val_plr += accuracy_torch(target_val.cpu(), val_output.cpu()).item()
+                    val_acc += accuracy_torch(target_val.cpu(), val_output.cpu()).item()
 
-            val_plr /= len(val_loader)
+            val_acc /= len(val_loader)
 
             # Report intermediate objective value
-            trial.report(val_plr, epoch)
+            trial.report(val_acc, epoch)
 
             # Prune unpromising trials
             if trial.should_prune():
                 raise optuna.TrialPruned()
 
-            if val_plr > best_val_plr:
-                best_val_plr = val_plr
+            if val_acc > best_val_acc:
+                best_val_acc = val_acc
                 epochs_no_improve = 0
             else:
                 epochs_no_improve += 1
@@ -87,7 +87,7 @@ def grnn_regression_hyperparameters_search(X, y, gpu_available, ticker_symbol, p
             if epochs_no_improve >= patience:
                 break
 
-        return best_val_plr
+        return best_val_acc
 
     study = optuna.create_study(direction='maximize', pruner=optuna.pruners.MedianPruner())
     study.optimize(grnn_regression_objective, n_trials=MAX_TRIALS)

@@ -41,8 +41,8 @@ def xgbregressor_gbtree_hyperparameters_search(X, y, gpu_available, ticker_symbo
         model = XGBRegressor(**param)
         model.fit(X_train, y_train, eval_set=[(X_valid, y_valid)], verbose=False)
         preds = model.predict(X_valid)
-        plr = accuracy_np(y_valid, preds)
-        return plr
+        acc = accuracy_np(y_valid, preds)
+        return acc
 
     study = optuna.create_study(direction='maximize')
     study.optimize(xgbregressor_gbtree_objective, n_trials=MAX_TRIALS)

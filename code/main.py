@@ -5,8 +5,9 @@ from main_evaluate import *
 
 make_all_directory()
 #main_data_collection()
-PCA = True
-#main_training(PCA)
+PCA = False
+improve_current_model_with_6_hours_training = False
+main_training(PCA, improve_current_model_with_6_hours_training)
 main_evaluate(PCA)
 
 
