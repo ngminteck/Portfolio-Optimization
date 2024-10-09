@@ -1,1 +1,1 @@
-{"out_channels": 30, "kernel_size": 5, "num_blocks": 2, "lstm_hidden_size": 93, "l2_lambda": 0.0091192730665495, "dropout_rate": 0.14916870162160137, "lr": 0.0580390873050192, "batch_size": 172}
+{"out_channels": 66, "kernel_size": 4, "num_blocks": 1, "lstm_hidden_size": 61, "l2_lambda": 0.005263893419599216, "dropout_rate": 0.19521022245058336, "lr": 0.09464899360371737, "batch_size": 235}
