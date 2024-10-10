@@ -1,8 +1,9 @@
 from yahoo_finance import *
 from technical_indicator import *
-from news_sentiment_analysis import *
 from data_preparation import *
 
+from datetime import datetime
+import os
 def main_data_collection():
 
     path = '../data/commodities_historical_data/original'

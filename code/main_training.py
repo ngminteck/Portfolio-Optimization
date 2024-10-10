@@ -41,7 +41,6 @@ def main_training(pca=False, run_hyperparameters=False):
 
         X, y_regressor = training_preprocess_data(ticker_symbol, pca)
 
-
         # If you want to start hyperparameter search from the beginning and delete old records (mostly needed if features and target have been changed):
         # Example: conv1d_classification_resume_training(X, y_classifier, gpu_available, ticker_symbol, pca, run_hyperparameters, True)
 

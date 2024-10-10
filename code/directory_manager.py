@@ -14,8 +14,8 @@ Trained_Models_Folder = "trained_models/"
 Hyperparameters_Search_Feature_Importance_Folder = "hyperparameters_search_models/feature_importance/"
 Trained_Models_Feature_Importance_Folder = "trained_models/feature_importance/"
 
-Trained_Feature_Folder ='../data/trained_feature/'
-PCA_Folder = '../data/pca/'
+Trained_Feature_Folder ='../data/trained_feature_without_pca/'
+PCA_Folder = '../data/trained_feature_with_pca/'
 
 def make_all_directory():
 
@@ -62,12 +62,16 @@ def make_all_directory():
     os.makedirs('../models/pca/trained_models/feature_importance/xgbregressor_gbtree', exist_ok=True)
 
     os.makedirs('../data/all', exist_ok=True)
-    os.makedirs('../data/train', exist_ok=True)
-    os.makedirs('../data/test', exist_ok=True)
+
 
     os.makedirs('../data/commodities_historical_data/original', exist_ok=True)
-    os.makedirs('../data/trained_feature', exist_ok=True)
-    os.makedirs('../data/pca', exist_ok=True)
+    os.makedirs('../data/trained_feature_without_pca/all', exist_ok=True)
+    os.makedirs('../data/trained_feature_without_pca/train', exist_ok=True)
+    os.makedirs('../data/trained_feature_without_pca/test', exist_ok=True)
+    os.makedirs('../data/trained_feature_with_pca/all', exist_ok=True)
+    os.makedirs('../data/trained_feature_with_pca/train', exist_ok=True)
+    os.makedirs('../data/trained_feature_with_pca/test', exist_ok=True)
+
     os.makedirs('../predicted_output/scaler/ticker', exist_ok=True)
     os.makedirs('../predicted_output/pca/ticker', exist_ok=True)
 

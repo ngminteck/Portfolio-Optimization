@@ -208,7 +208,7 @@ sentiment_columns = ['scaled_NET_SENTIMENT', 'scaled_UNCERTAINTY_MODAL', 'scaled
 
 main_colums = [
     "Date", "Open", "High", "Low", "Close", "Volume", "Change", "Wave", "EFP Volume", "EFS Volume",
-    "Block Volume", "Last", "Previous Day Open Interest", "DAILY_CLOSEPRICE_CHANGE"
+    "Block Volume", "Last", "Previous Day Open Interest", "DAILY_CLOSEPRICE_CHANGE", "Scaled_DAILY_CLOSEPRICE_CHANGE"
 ]
 
 def training_preprocess_data(ticker_symbol, PCA):
@@ -219,23 +219,27 @@ def training_preprocess_data(ticker_symbol, PCA):
     if df.isna().sum().sum() > 0 or df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
         df = df.replace([float('inf'), float('-inf')], np.nan).dropna()
 
-    y_scaler = StandardScaler()
-    y_regressor = df[['DAILY_CLOSEPRICE_CHANGE']]  # Convert to DataFrame
-    y_regressor_scaled = pd.DataFrame(y_scaler.fit_transform(y_regressor), columns=y_regressor.columns)
+    # Convert 'Date' column to datetime
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
 
-    #for index, column in enumerate(df.columns):
-     #   print(f"{index} : {column}")
+    # Define the start and end dates
+    start_date = pd.to_datetime("1/27/2015")
+    end_date = pd.to_datetime("6/28/2021")
 
-    X = df.copy(deep=True)
-    columns_to_append = [col for col in sentiment_columns if col in df.columns and col not in X.columns]
+    # Filter the DataFrame to keep only the data within the date range
+    df = df[(df['Date'] >= start_date) & (df['Date'] <= end_date)]
+
+    df.reset_index(drop=True, inplace=True)
+
+    columns_to_append = [col for col in sentiment_columns if col in df.columns and col not in df.columns]
     # Append the missing sentiment columns from df to X
     if columns_to_append:
         # Reset indices before concatenation
-        X = X.reset_index(drop=True)
+        df = df.reset_index(drop=True)
         sentiment_data = df[columns_to_append].reset_index(drop=True)
-        X = pd.concat([X, sentiment_data], axis=1)
+        df = pd.concat([df, sentiment_data], axis=1)
 
-    X = X.drop(X.columns[99:162], axis=1)
+    df = df.drop(df.columns[99:162], axis=1)
 
     columns_to_drop = [
         'NEXT_DAY_CLOSEPRICE', 'DAILY_CLOSEPRICE_CHANGE_PERCENT',
@@ -243,33 +247,57 @@ def training_preprocess_data(ticker_symbol, PCA):
         'DAILY_MIDPRICE', 'NEXT_DAY_MIDPRICE', 'DAILY_MIDPRICE_CHANGE', 'DAILY_MIDPRICE_CHANGE_PERCENT',
         'DAILY_MIDPRICE_DIRECTION',
     ]
-    X = X.drop(columns=columns_to_drop)
+    df = df.drop(columns=columns_to_drop)
 
     # Drop columns with only one unique value
-    X = X.loc[:, X.nunique() > 1]
+    df = df.loc[:, df.nunique() > 1]
     
-    columns_to_divide_by_100 = [col for col in division_hundred_columns if col in X.columns]
-    X[columns_to_divide_by_100] = X[columns_to_divide_by_100] / 100
+    columns_to_divide_by_100 = [col for col in division_hundred_columns if col in df.columns]
+    df[columns_to_divide_by_100] = df[columns_to_divide_by_100] / 100
 
-    columns_to_standard_scale = [col for col in standard_scaled_columns if col in X.columns]
+    columns_to_standard_scale = [col for col in standard_scaled_columns if col in df.columns]
     X_scaler = StandardScaler()
-    X[columns_to_standard_scale] = X_scaler.fit_transform(X[columns_to_standard_scale])
-    X.to_csv(f'{Trained_Feature_Folder}{ticker_symbol}.csv', index=False)
+    df[columns_to_standard_scale] = X_scaler.fit_transform(df[columns_to_standard_scale])
+    y_scaler = StandardScaler()
+    df["Scaled_DAILY_CLOSEPRICE_CHANGE"] = y_scaler.fit_transform(df[["DAILY_CLOSEPRICE_CHANGE"]])
+
+    df.to_csv(f'{Trained_Feature_Folder}all/{ticker_symbol}.csv', index=False)
+
+    cutoff_date = pd.to_datetime("1/1/2020")
+    train_df = df[(df['Date'] < cutoff_date)]
+    test_df1 = train_df.tail(30).copy(deep=True)
+    test_df2 = df[(df['Date'] >= cutoff_date)]
+
+    test_df = pd.concat([test_df1, test_df2])
+
+    train_df.to_csv(f'{Trained_Feature_Folder}train/{ticker_symbol}.csv', index=False)
+    test_df.to_csv(f'{Trained_Feature_Folder}test/{ticker_symbol}.csv', index=False)
 
     if PCA:
         pca_excluded_columns = main_colums + sentiment_columns
-        df_main_column = [col for col in pca_excluded_columns if col in X.columns]
-        main_df = X[df_main_column].copy(deep=True)
-        technical_indicator_df = X.drop(columns=df_main_column)
+        df_main_column = [col for col in pca_excluded_columns if col in df.columns]
+        main_df = df[df_main_column].copy(deep=True)
+        technical_indicator_df = df.drop(columns=df_main_column)
     
         pca_df = pca_feature_extraction(X_scaled=technical_indicator_df)
-        pca_df.index = range(88, 88 + len(pca_df))
 
         main_df = pd.concat([main_df, pca_df], axis=1)
-        X = main_df
-        X.to_csv(f'{PCA_Folder}{ticker_symbol}.csv', index=False)
+        df = main_df
+        df.to_csv(f'{PCA_Folder}all/{ticker_symbol}.csv', index=False)
 
+        train_df = df[(df['Date'] < cutoff_date)]
+        test_df1 = train_df.tail(30).copy(deep=True)
+        test_df2 = df[(df['Date'] >= cutoff_date)]
+
+        test_df = pd.concat([test_df1, test_df2])
+
+        train_df.to_csv(f'{PCA_Folder}train/{ticker_symbol}.csv', index=False)
+        test_df.to_csv(f'{PCA_Folder}test/{ticker_symbol}.csv', index=False)
+
+    X = train_df
+    y_regressor_scaled = X[["Scaled_DAILY_CLOSEPRICE_CHANGE"]].copy(deep=True)
     X = X.drop('DAILY_CLOSEPRICE_CHANGE', axis=1)
+    X = X.drop('Scaled_DAILY_CLOSEPRICE_CHANGE', axis=1)
     X = X.drop('Date', axis=1)
 
     print(X.shape)
@@ -280,22 +308,18 @@ def training_preprocess_data(ticker_symbol, PCA):
 def predict_preprocess_data(ticker_symbol, PCA):
 
     if PCA:
-        X = pd.read_csv(f'{PCA_Folder}{ticker_symbol}.csv')
+        X = pd.read_csv(f'{PCA_Folder}all/{ticker_symbol}.csv')
     else:
-        X = pd.read_csv(f'{Trained_Feature_Folder}{ticker_symbol}.csv')
-
-    X = X.drop('DAILY_CLOSEPRICE_CHANGE', axis=1)
-    X = X.drop('Date', axis=1)
-
-    df = pd.read_csv(f"../data/all/{ticker_symbol}.csv")
-
-    # Handle missing and infinite values
-    if df.isna().sum().sum() > 0 or df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
-        df = df.replace([float('inf'), float('-inf')], np.nan).dropna()
+        X = pd.read_csv(f'{Trained_Feature_Folder}all/{ticker_symbol}.csv')
 
     y_scaler = StandardScaler()
-    y_regressor = df[['DAILY_CLOSEPRICE_CHANGE']]  # Convert to DataFrame
-    y_regressor_scaled = pd.DataFrame(y_scaler.fit_transform(y_regressor), columns=y_regressor.columns)
+    y_regressor_scaled = y_scaler.fit_transform(X[["DAILY_CLOSEPRICE_CHANGE"]])
+
+    y_regressor = X[["DAILY_CLOSEPRICE_CHANGE"]].copy(deep=True)
+    X = X.drop('DAILY_CLOSEPRICE_CHANGE', axis=1)
+    X = X.drop('Scaled_DAILY_CLOSEPRICE_CHANGE', axis=1)
+    X = X.drop('Date', axis=1)
+
 
     print(X.shape)
     print(y_regressor_scaled.shape)

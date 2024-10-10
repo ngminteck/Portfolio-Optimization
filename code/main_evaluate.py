@@ -138,12 +138,22 @@ def main_evaluate(pca=False):
         if unscaled_df.isna().sum().sum() > 0 or unscaled_df.isin([float('inf'), float('-inf')]).sum().sum() > 0:
             unscaled_df = unscaled_df.replace([float('inf'), float('-inf')], np.nan).dropna()
 
+        # Convert 'Date' column to datetime
+        unscaled_df['Date'] = pd.to_datetime(unscaled_df['Date'], errors='coerce')
+
+        # Define the start and end dates
+        start_date = pd.to_datetime("1/27/2015")
+        end_date = pd.to_datetime("6/28/2021")
+
+        # Filter the DataFrame to keep only the data within the date range
+        unscaled_df = unscaled_df[(unscaled_df['Date'] >= start_date) & (unscaled_df['Date'] <= end_date)]
+
         unscaled_df.reset_index(drop=True, inplace=True)
         unscaled_df = unscaled_df.iloc[-min_rows:]
 
-        df = pd.read_csv(f'{Trained_Feature_Folder}{ticker_symbol}.csv')
+        df = pd.read_csv(f'{Trained_Feature_Folder}all/{ticker_symbol}.csv')
         if pca:
-            df = pd.read_csv(f'{PCA_Folder}{ticker_symbol}.csv')
+            df = pd.read_csv(f'{PCA_Folder}all/{ticker_symbol}.csv')
 
         df = df.iloc[-min_rows:]
 
